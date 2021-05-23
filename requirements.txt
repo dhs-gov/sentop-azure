@@ -1,0 +1,25 @@
+# DO NOT include azure-functions-worker in this file
+# The Python Worker is managed by Azure Functions platform
+# Manually managing azure-functions-worker may cause unexpected issues
+# python -m pip install -r requirements.txt
+azure-functions
+azure-functions-durable>=1.0.0b12
+-f https://download.pytorch.org/whl/torch_stable.html
+torch==1.6.0+cpu
+torchvision==0.7.0+cpu
+jsonpickle
+adaptnlp
+nltk
+numpy
+bertopic
+openpyxl
+bertopic
+sklearn
+flair
+psutil
+tomotopy
+#spacy # Read how to do for Azure at https://williamandrewgriffin.com/best-way-to-deploy-spacy-to-azure-functions/
+stemming
+psycopg2
+urllib3
+transformers

@@ -1,0 +1,25 @@
+{
+  "azureFunctions.deploySubpath": ".",
+  "azureFunctions.scmDoBuildDuringDeployment": true,
+  "azureFunctions.pythonVenv": ".venv",
+  "azureFunctions.projectLanguage": "Python",
+  "azureFunctions.projectRuntime": "~3",
+  "debug.internalConsoleOptions": "neverOpen",
+  "python.linting.pylintEnabled": false,
+  "python.linting.enabled": false,
+  "python.linting.prospectorEnabled": false,
+  "python.pythonPath": ".venv\\Scripts\\python.exe",
+  "cSpell.words": [
+    "bertopic",
+    "cardiffnlp",
+    "ldawords",
+    "nlptown",
+    "pkey",
+    "psycopg",
+    "submissions",
+    "table",
+    "timestamptz",
+    "topics"
+  ],
+  "python.linting.flake8Enabled": true
+}
