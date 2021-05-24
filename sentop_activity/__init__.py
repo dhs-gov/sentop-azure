@@ -102,6 +102,7 @@ def main(name: object) -> json:
         #sentlog.append(f"BERTopic topics {bert_topics}.\n")
         db = postgres.Database()
         db.create_bertopic_table(sentop_id, bert_topics)
+        db.create_bertopic_nooverlap_table(sentop_id, bert_topics, bert_duplicate_words)
     else:
         sentlog.append(f"ERROR! No BERTopic topics could be generated.\n")
 
@@ -115,6 +116,8 @@ def main(name: object) -> json:
         #sentlog.append(f"LDA topics {lda_topics}.\n")
         db = postgres.Database()
         db.create_lda_table(sentop_id, lda_topics)
+        db.create_lda_nooverlap_table(sentop_id, lda_topics, lda_duplicate_words)
+
         if not lda_error:
             sentlog.append(f"LDA Topic Distribution: {Counter(lda_sentence_topics)}.\n")
     else:
