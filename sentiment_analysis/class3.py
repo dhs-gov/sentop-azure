@@ -58,17 +58,6 @@ def get_sentiment(classifier, text):
 
     # This should only loop once
     for confidence_score in confidence_scores:
-        '''
-        s = calc_sentiment(confidence_score)
-        if s is None:
-            print("Error: sentiment is NoneType")
-        if confidence_score.labels[0] is None:
-            print("Error: Label 0 is NoneType")
-        elif confidence_score.labels[1] is None:
-            print("Error: Label 1 is NoneType")
-        elif confidence_score.labels[2] is None:
-            print("Error: Label 2 is NoneType")
-        '''
 
         sentiment = Sentiment(
             calc_sentiment(confidence_score),
