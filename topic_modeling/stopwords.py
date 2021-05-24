@@ -8,7 +8,7 @@ stopwords_list = ["comment",
                 "single",
                 "person",
                 "dhs",
-                "told", "thought", "vendor", 
+                "told", "thought",
                 "yeah", "yes", "uh", "um", "dunno", 
                 "thing", "things" 
                 "aight",
