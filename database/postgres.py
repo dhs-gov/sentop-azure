@@ -216,10 +216,41 @@ class Database:
         finally:
             self.close_connection()
 
+    def create_lda_nooverlap_table(self, id, topics, lda_duplicate_words):
+        tablename = str(id) + self.lda_words_table_suffix + "_nooverlap"
+        #print("In create lda table: ", tablename)
+        self.open_connection()
+        if self.table_exists(tablename):
+            # Remove existing BERTopic words table.
+            #print("Removing lda table...")
+            self.remove_table(tablename)
+            #print("Removed existing LDA words table: ", tablename)
+
+        try:
+            stmt = ("CREATE TABLE " + tablename +
+                "(num int NOT NULL, topic int, word text, weight float, PRIMARY KEY (num))")
+            self.execute_stmt(stmt)
+            num = 0
+            for topic in topics:
+                #print("topic numb: ", topic.topic_num)
+                for i in range(len(topic.words)):
+                    if not topic.words[i] in lda_duplicate_words:
+                        # Update submissions table
+                        stmt = ("INSERT INTO " + tablename +
+                            "(num, topic, word, weight) VALUES (%s,%s,%s,%s)")
+                        data = (num, topic.topic_num, topic.words[i], topic.weights[i])
+                        self.execute_stmt_data(stmt, data)
+                        num = num + 1
+            #print("Created LDA non-overlapping words table.")
+        except (Exception, psycopg2.DatabaseError) as error:
+            globalutils.show_stack_trace(str(e))
+        finally:
+            self.close_connection()
+
     # -------------------------------- BERTOPIC WORDS ----------------------------------
 
     def create_bertopic_table(self, id, topics):
-        tablename = str(id) + self.bertopic_words_table_suffix
+        tablename = str(id) + self.bertopic_words_table_suffix + "_nooverlap"
         #print("In create bertopics_table: ", tablename)
 
         self.open_connection()
@@ -244,6 +275,39 @@ class Database:
                     self.execute_stmt_data(stmt, data)
                     num = num + 1
             #print("Created BERTopics words table.")
+
+        except (Exception, psycopg2.DatabaseError) as error:
+            globalutils.show_stack_trace(str(e))
+        finally:
+            self.close_connection()
+
+    def create_bertopic_nooverlap_table(self, id, topics, bert_duplicate_words):
+        tablename = str(id) + self.bertopic_words_table_suffix
+        #print("In create bertopics_table: ", tablename)
+
+        self.open_connection()
+        if self.table_exists(tablename):
+            # Remove existing BERTopic words table.
+            #print("Removing bertopics table...")
+            self.remove_table(tablename)
+            #print("Removed existing BERTopic words table: ", tablename)
+
+        try:
+            stmt = ("CREATE TABLE " + tablename +
+                " (num int NOT NULL, topic int, word text, weight float, PRIMARY KEY (num))")
+            self.execute_stmt(stmt)
+            num = 0
+            for topic in topics:
+                #print("topic numb: ", topic.topic_num)
+                for i in range(len(topic.words)):
+                    # Update submissions table
+                    if not topic.words[i] in bert_duplicate_words:
+                        stmt = ("INSERT INTO " + tablename +
+                            "(num, topic, word, weight) VALUES (%s,%s,%s,%s)")
+                        data = (num, topic.topic_num, topic.words[i], topic.weights[i])
+                        self.execute_stmt_data(stmt, data)
+                        num = num + 1
+            #print("Created BERTopics non-overlapping words table.")
 
         except (Exception, psycopg2.DatabaseError) as error:
             globalutils.show_stack_trace(str(e))
