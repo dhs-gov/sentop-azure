@@ -49,7 +49,7 @@ def get_sentiments(data_list, sentlog):
     star5_sentiment_rows = class5.assess(classifier, data_list)
     sentlog.append("Done")
     #emotion.assess(data_list)
-    sentlog.append("Done")
+    #sentlog.append("Done")
 
 
     return class3_sentiment_rows, star5_sentiment_rows
