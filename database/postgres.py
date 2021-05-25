@@ -114,7 +114,7 @@ class Database:
     def create_submissions_table(self):
         try:
             print("Creating submissions table.")
-            stmt = "CREATE TABLE submissions (id text, annoation text, json_data text, file_url text, received_date timestamp, completed_date timestamp, status text, message text, PRIMARY KEY(id))"
+            stmt = "CREATE TABLE submissions (id text, annotation text, json_data text, file_url text, received_date timestamp, completed_date timestamp, status text, message text, PRIMARY KEY(id))"
             self.execute_stmt(stmt)
         except (Exception, psycopg2.DatabaseError) as error:
             print("Error creating submissions table: ", error)
