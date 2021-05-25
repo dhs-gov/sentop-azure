@@ -245,7 +245,7 @@ def get_topics(rows, all_stop_words):
     sentlog = globalutils.SentopLog()
     sentlog.append("----------------------------------------------------------")
     sentlog.append("Assessing BERTopic")
-    sentlog.append("BERTopic tests several NLP sentence embedding models and selects the model that has an outlier frequency less than 20% and with the highest number of topics and lowest number of overlapping words.")
+    sentlog.append("BERTopic tests several NLP sentence embedding models and selects the model that has the lowest number of outlier documents and lowest number of overlapping topic words.")
 
     model, topic_model, topic_per_row, topics_list, best_overlapping_words, error = get_best_model_name(rows, all_stop_words)
     if error:
