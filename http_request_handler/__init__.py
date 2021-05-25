@@ -9,8 +9,9 @@ from globals import globalutils
 from datetime import datetime
 
 class DataIn:
-    def __init__(self, sentop_id, row_id_list, data_list, all_stop_words, annotation):
+    def __init__(self, kms_id, sentop_id, row_id_list, data_list, all_stop_words, annotation):
         #print(f"Creating DataIn with SENTOP ID: {sentop_id}")
+        self.kms_id = kms_id
         self.sentop_id = sentop_id
         self.row_id_list = row_id_list  
         self.data_list = data_list
@@ -144,6 +145,11 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
         sentlog.append(f"ERROR! Could not find JSON or file data.\n")
         return func.HttpResponse("Error retrieving JSON or file data.", status_code=400)
 
+    if annotation:
+        annotation_error = db.add_annotation(sentop_id, annotation)
+        sentlog.append(f"WARNING! Could not update user annotation in database: {annotation_error}.\n")
+
+
     sentlog.append(f"Num non-blank, highlighted data points found: {len(data_list)}.")
     if len(data_list) != len(row_id_list):
         sentlog.append("ERROR! Number of rows does not match number of data points. 1")
@@ -169,7 +175,7 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
    # ------------------ CREATE JSON DATA FOR AZURE ACTIVITY --------------------
 
     #sentlog.append("Data in: ", data_list)
-    data_list_obj = DataIn(sentop_id, row_id_list, data_list, all_stop_words, annotation)
+    data_list_obj = DataIn(kms_id, sentop_id, row_id_list, data_list, all_stop_words, annotation)
 
     # Since Azure requires that we pass an object that is JSON
     # serializable, we have to convert all data to a JSON object.
