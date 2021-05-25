@@ -77,6 +77,7 @@ def main(name: object) -> json:
 
     json_obj = name
     data_in_obj = jsonpickle.decode(json_obj)
+    kms_id = data_in_obj.kms_id
     sentop_id = data_in_obj.sentop_id
     sentlog.append(f"Starting analysis for SENTOP ID: {sentop_id}")
     data_list = data_in_obj.data_list
@@ -141,12 +142,13 @@ def main(name: object) -> json:
 
     json_out = jsonpickle.encode(result, unpicklable=False)
     #sentlog.append("JSON STR OUT: ", json_out)
-    sentlog.append(f"Done analyzing ID: {sentop_id}")
+    sentlog.append(f"Completed processing: {kms_id} (SENTOP ID: {sentop_id}).")
     end = time.time() 
 
     hours, rem = divmod(end-start, 3600)
     minutes, seconds = divmod(rem, 60)
     sentlog.append("Elapsed {:0>2}h {:0>2}m {:05.1f}s".format(int(hours),int(minutes),seconds))
+    sentlog.append(f"DONE")
 
     if json_out:
         print("<<<<<<<<<<<<<<<<<<< E N D <<<<<<<<<<<<<<<<<<<")
