@@ -51,7 +51,6 @@ def get_sentiments(data_list, sentlog):
     #emotion.assess(data_list)
     #sentlog.append("Done")
 
-
     return class3_sentiment_rows, star5_sentiment_rows
 
 
@@ -66,6 +65,7 @@ class Response:
         self.results_filename = sentop_id + "_results.xlsx"
         self.log_filename = sentop_id + "_log.txt"
 
+# ================================== M A I N ===================================
 
 # Here, 'name' is the incoming data_in payload.
 def main(name: object) -> json:
@@ -89,9 +89,13 @@ def main(name: object) -> json:
     annotation = data_in_obj.annotation
     sentlog.append(f"Annotation found : {annotation}")
 
+    # ---------------------------- GET SENTIMENTS ------------------------------
+
     # Perform sentiment analyses
     class3_sentiment_rows, star5_sentiment_rows = get_sentiments(data_list, sentlog)
     
+    # ----------------------------- GET BERTopic -------------------------------
+
     # Perform BERTopic
     bert_sentence_topics, bert_topics, bert_duplicate_words, bert_error = topmod_bertopic.get_topics(
         data_list, all_stop_words)
@@ -106,6 +110,8 @@ def main(name: object) -> json:
         db.create_bertopic_nooverlap_table(sentop_id, bert_topics, bert_duplicate_words)
     else:
         sentlog.append(f"ERROR! No BERTopic topics could be generated.\n")
+
+    # -------------------------------- GET LDA ---------------------------------
 
     # Perform LDA
     lda_sentence_topics, lda_topics, lda_duplicate_words, lda_error = lda_tomotopy.get_topics(
@@ -127,18 +133,24 @@ def main(name: object) -> json:
     #sentlog.append("class3-rows: ", len(class3_sentiment_rows))
     #sentlog.append("class5-rows: ", len(star5_sentiment_rows))
 
-    sentlog.append("----------------------------------------------------------")
-    sentlog.append(f"Created PostgreSQL tables for SENTOP ID: {sentop_id}")
+    # ----------------------------- RESULTS TO DB ------------------------------
 
     # Write to database
     db = postgres.Database()
     db.create_result_table(sentop_id, row_id_list, data_list, class3_sentiment_rows, star5_sentiment_rows, bert_sentence_topics, bert_topics, lda_sentence_topics, lda_topics)
     
-    result = Response(sentop_id)
+    sentlog.append("----------------------------------------------------------")
+    sentlog.append(f"Created PostgreSQL tables for SENTOP ID: {sentop_id}")
+
+    # ---------------------------- RESULTS TO XLSX -----------------------------
 
     globalutils.generate_excel(sentop_id, annotation, row_id_list, data_list, bert_sentence_topics, lda_sentence_topics, class3_sentiment_rows, star5_sentiment_rows, bert_topics, lda_topics, bert_duplicate_words, lda_duplicate_words)
 
     sentlog.append(f"Generated Excel files for SENTOP ID: {sentop_id}")
+
+    # -------------------------------- FINISH ----------------------------------
+
+    result = Response(sentop_id)
 
     json_out = jsonpickle.encode(result, unpicklable=False)
     #sentlog.append("JSON STR OUT: ", json_out)
