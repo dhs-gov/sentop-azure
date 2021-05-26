@@ -91,6 +91,7 @@ def get_xlsx_data(bytes):
         ws = wb.worksheets[0]  
 
         # ------------------------ FIND DATA ID COLUMN -------------------------
+
         # NOTE: Selected data column header cell MUST NOT BE BLANK!
         
         sentlog.append(f"----------------------------------------------------------")
@@ -123,6 +124,7 @@ def get_xlsx_data(bytes):
             sentlog.append(f"Found data ID column {id_column}")
 
         # --------------------- GET HIGHLIGHTED DATA CELLS ---------------------
+        
         # NOTE: Cell color will be '000000' if cell has no data, regardless of color.
         
         sentlog.append(f"----------------------------------------------------------")
@@ -249,10 +251,10 @@ def get_data(req, sentop_id, kms_id):
                 row_id_list, data_list, user_stop_words, annotation, error = get_json_payload(json_obj)
                 if error:
                     return None, None, None, None, error
-            #else:
-            #    sentlog.append("WARNING: No JSON object found in request.")
-        #else:
-        #    sentlog.append("WARNING: No JSON body found in request")
+            else:
+                print("No JSON object found in request.")
+        else:
+            print("No JSON body found in request")
 
         if data_list:
             return row_id_list, data_list, user_stop_words, annotation, error
@@ -260,6 +262,7 @@ def get_data(req, sentop_id, kms_id):
             return None, None,  None, None, "No JSON or file URL received."
 
         # ------------------------ GET FILE DATA ---------------------------
+
         sentlog.append(f"No JSON documents found.")
         sentlog.append(f"Checking for file: {kms_id}.") 
         http = urllib3.PoolManager()
@@ -272,10 +275,11 @@ def get_data(req, sentop_id, kms_id):
         if resp.status == 200:
             #print("Response data: ", resp.data)
             try:
+
                 # --------------------- GET XLSX DATA ----------------------
+
                 if kms_id.endswith('.xlsx'):
                     sentlog.append("Found XLSX file.")
-                    # Get Excel req params
                     try:
                         row_id_list, data_list, user_stop_words, annotation, error = get_xlsx_data(resp.data)
                         if error:
