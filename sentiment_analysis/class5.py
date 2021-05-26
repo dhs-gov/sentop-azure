@@ -13,19 +13,19 @@ def truncate(f, n):
 class Sentiment:
     def __init__(self, sentiment, vneg, neg, neutral, pos, vpos):
         self.sentiment = sentiment
-        self.negative = float(truncate(vneg, 3))
-        self.neutral = float(truncate(neg, 3))
-        self.positive = float(truncate(neutral, 3))
+        self.very_negative = float(truncate(vneg, 3))
+        self.negative = float(truncate(neg, 3))
+        self.neutral = float(truncate(neutral, 3))
         self.positive = float(truncate(pos, 3))
-        self.positive = float(truncate(vpos, 3))
+        self.very_positive = float(truncate(vpos, 3))
 
 
 def calc_sentiment(confidence_score):
-    largest_label = "1 star"
+    largest_label = "LABEL_0"
     largest_score = 0.0
 
     for label in confidence_score.labels:
-        #print("cf: ", label)
+        #print("5STAR LABEL: ", label)
         if label.score > largest_score:
             largest_label = str(label)
             largest_score = label.score
