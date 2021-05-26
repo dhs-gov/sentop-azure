@@ -191,6 +191,8 @@ def get_xlsx_data(bytes):
                 sentlog.append(f"No user stop words found.")
                 user_stop_words = []
 
+        # --------------------- GET ANNOTATION ---------------------
+
             annotation_ws = wb.get_sheet_by_name('SENTOP Annotation')
             if annotation_ws:
                 annotation = get_col_values_as_str(annotation_ws)
