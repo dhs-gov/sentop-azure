@@ -1,79 +1,83 @@
-from transformers import AutoModelForSequenceClassification
-from transformers import TFAutoModelForSequenceClassification
-from transformers import AutoTokenizer
-import numpy as np
-from scipy.special import softmax
-import csv
-import urllib.request
 from globals import globalutils
 
-# Preprocess text (username and link placeholders)
-def preprocess(text):
-    new_text = []
-    for t in text.split(" "):
-        t = '@user' if t.startswith('@') and len(t) > 1 else t
-        t = 'http' if t.startswith('http') else t
-        new_text.append(t)
-    return " ".join(new_text)
 
-# Tasks:
-# emoji, emotion, hate, irony, offensive, sentiment
-# stance/abortion, stance/atheism, stance/climate, stance/feminist, stance/hillary
+def truncate(f, n):
+    '''Truncates/pads a float f to n decimal places without rounding'''
+    s = '{}'.format(f)
+    if 'e' in s or 'E' in s:
+        return '{0:.{1}f}'.format(f, n)
+    i, p, d = s.partition('.')
+    return '.'.join([i, (d + '0' * n)[:n]])
 
 
+class Sentiment:
+    def __init__(self, sentiment, joy, optimism, anger, sadness):
+        self.sentiment = sentiment
+        self.joy = float(truncate(joy, 3))
+        self.optimism = float(truncate(optimism, 3))
+        self.anger = float(truncate(anger, 3))
+        self.sadness = float(truncate(sadness, 3))
+
+def calc_sentiment(confidence_score):
+    largest_label = 'LABEL_0'
+    largest_score = 0.0
+
+    for label in confidence_score.labels:
+        #print("cf: ", label)
+        if label.score > largest_score:
+            largest_label = str(label)
+            largest_score = label.score
+
+    #print("largest_label: ", largest_label)
+    if "LABEL_0" in largest_label:
+        return "anger"
+    elif "LABEL_1" in largest_label:
+        return "joy"
+    elif "LABEL_2" in largest_label:
+        return "optimism"
+    elif "LABEL_3" in largest_label:
+        return "sadness"   
+    else:
+        print("WARNING: unknown sentiment")
+        return "optimism"
+        
+
+def get_sentiment(classifier, text):
+
+    globalutils.block_logging()
+    with globalutils.suppress_stdout_stderr():
+
+        confidence_scores = classifier.tag_text(
+            text=text,
+            #"nlptown/bert-base-multilingual-uncased-sentiment"
+            #"cardiffnlp/twitter-roberta-base-emotion"
+            model_name_or_path="cardiffnlp/twitter-roberta-base-emotion",
+            mini_batch_size=1
+        )
+    globalutils.enable_logging()
+
+    # This should only loop once
+    for confidence_score in confidence_scores:
+
+        sentiment = Sentiment(
+            calc_sentiment(confidence_score),
+            confidence_score.labels[0].score,
+            confidence_score.labels[1].score,
+            confidence_score.labels[2].score,
+            confidence_score.labels[3].score
+            )
+        return sentiment
 
 
-def get_emotion(doc):
-    task='sentiment'
-    MODEL = f"cardiffnlp/twitter-roberta-base-{task}"
-
-    tokenizer = AutoTokenizer.from_pretrained(MODEL)
-
-    # download label mapping
-    mapping_link = f"https://raw.githubusercontent.com/cardiffnlp/tweeteval/main/datasets/{task}/mapping.txt"
-    with urllib.request.urlopen(mapping_link) as f:
-        html = f.read().decode('utf-8').split("\n")
-        csvreader = csv.reader(html, delimiter='\t')
-    labels = [row[1] for row in csvreader if len(row) > 1]
-
-    # PT
-    model = AutoModelForSequenceClassification.from_pretrained(MODEL)
-    model.save_pretrained(MODEL)
-
-    #text = "Celebrating my promotion 😎"
-    #text = preprocess(text)
-    encoded_input = tokenizer(doc, return_tensors='pt')
-    output = model(**encoded_input)
-    scores = output[0][0].detach().numpy()
-    scores = softmax(scores)
-
-    # # TF
-    # model = TFAutoModelForSequenceClassification.from_pretrained(MODEL)
-    # model.save_pretrained(MODEL)
-
-    # text = "Celebrating my promotion 😎"
-    # encoded_input = tokenizer(text, return_tensors='tf')
-    # output = model(encoded_input)
-    # scores = output[0][0].numpy()
-    # scores = softmax(scores)
-
-    ranking = np.argsort(scores)
-    ranking = ranking[::-1]
-    for i in range(scores.shape[0]):
-        l = labels[ranking[i]]
-        s = scores[ranking[i]]
-        print(f"{i+1}) {l} {np.round(float(s), 4)}")
-
-
-def assess(data_list):
+def assess(classifier, docs):
     sentlog = globalutils.SentopLog()
     sentlog.append("----------------------------------------------------------")
-    sentlog.append("Assessing 3-class sentiment. Please wait...")
+    sentlog.append("Assessing emotion sentiment. Please wait...")
     sentiments = []
     i = 0
-    for doc in data_list:
+    for doc in docs:
         #print("doc: ", doc)
-        sentiment = get_emotion(doc)
+        sentiment = get_sentiment(classifier, doc)
         
         if sentiment:
             sentiments.append(sentiment)
