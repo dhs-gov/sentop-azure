@@ -1,5 +1,5 @@
 from globals import globalutils
-
+import pprint
 
 
 def truncate(f, n):
@@ -24,7 +24,7 @@ def calc_sentiment(confidence_score):
     largest_score = 0.0
 
     for label in confidence_score.labels:
-        #print("cf: ", label)
+        print("3CLASS LABEL: ", label)
         if label.score > largest_score:
             largest_label = str(label)
             largest_score = label.score
@@ -55,8 +55,13 @@ def get_sentiment(classifier, text):
         )
     globalutils.enable_logging()
 
+
+
     # This should only loop once
     for confidence_score in confidence_scores:
+
+        #pprint({confidence_score.to_original_text(): confidence_score.labels})
+
 
         sentiment = Sentiment(
             calc_sentiment(confidence_score),
