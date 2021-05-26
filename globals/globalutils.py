@@ -144,7 +144,7 @@ def get_frozen_stopwords(user_stop_words):
     return all_stop_words
 
 
-def generate_excel(id, annotation, num_list, data_list, bert_sentence_topics, lda_sentence_topics, class3_sentiment_rows, star5_sentiment_rows, bert_topics, lda_topics, bert_duplicate_words, lda_duplicate_words):
+def generate_excel(id, annotation, num_list, data_list, bert_sentence_topics, lda_sentence_topics, class3_sentiment_rows, star5_sentiment_rows, emotion_rows, hate_rows, irony_rows, offensive_rows, bert_topics, lda_topics, bert_duplicate_words, lda_duplicate_words):
    
     # NOTE: data is a list of [id, text]
     #num_list = column(data, 0)
@@ -164,6 +164,10 @@ def generate_excel(id, annotation, num_list, data_list, bert_sentence_topics, ld
             row_data.append(lda_sentence_topics[i])
             row_data.append(class3_sentiment_rows[i].sentiment)
             row_data.append(star5_sentiment_rows[i].sentiment)
+            row_data.append(emotion_rows[i].sentiment)
+            row_data.append(hate_rows[i].sentiment)
+            row_data.append(irony_rows[i].sentiment)
+            row_data.append(offensive_rows[i].sentiment)
             rows.append(row_data)
 
 
@@ -172,7 +176,7 @@ def generate_excel(id, annotation, num_list, data_list, bert_sentence_topics, ld
     xlsx_out = output_dir_path + "\\" + id + "_results.xlsx"
     ws1 = wb.active
     ws1.title = "Results"
-    ws1.append(['Id', 'Text', 'BERTopic Topic', 'LDA Topic', '3-Class Sentiment', '5-Star Sentiment'])
+    ws1.append(['Id', 'Text', 'BERTopic Topic', 'LDA Topic', '3-Class Sentiment', '5-Star Sentiment', 'Emotion', 'Hate', 'Irony', 'Offensive'])
     for i in range(len(rows)):
         ws1.append(rows[i])
 
