@@ -120,7 +120,6 @@ class Database:
             print("Error creating submissions table: ", error)
 
 
-    # Returns error
     def add_submission(self, id, file_url):
         self.open_connection()
         if not self.table_exists("submissions"):
@@ -167,6 +166,7 @@ class Database:
         finally:
             self.close_connection()
 
+
     # Save Annotation data to submissions table.
     def add_annotation(self, id, annotation):
         self.open_connection()
@@ -211,7 +211,7 @@ class Database:
                     self.execute_stmt_data(stmt, data)
                     num = num + 1
             #print("Created LDA words table.")
-        except (Exception, psycopg2.DatabaseError) as error:
+        except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
         finally:
             self.close_connection()
@@ -242,7 +242,7 @@ class Database:
                         self.execute_stmt_data(stmt, data)
                         num = num + 1
             #print("Created LDA non-overlapping words table.")
-        except (Exception, psycopg2.DatabaseError) as error:
+        except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
         finally:
             self.close_connection()
@@ -276,7 +276,7 @@ class Database:
                     num = num + 1
             #print("Created BERTopics words table.")
 
-        except (Exception, psycopg2.DatabaseError) as error:
+        except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
         finally:
             self.close_connection()
@@ -309,7 +309,7 @@ class Database:
                         num = num + 1
             #print("Created BERTopics non-overlapping words table.")
 
-        except (Exception, psycopg2.DatabaseError) as error:
+        except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
         finally:
             self.close_connection()
@@ -360,15 +360,3 @@ class Database:
             globalutils.show_stack_trace(str(e))
         finally:
             self.close_connection()
-
-#add_submission("1234", None)
-#clear_table("submissions")
-'''
-db = Database()
-db.open_connection()
-db.add_submission("URL1245", "https://sharepoint.dhs.gov/Activate%20testing.docx")
-#db.clear_table("submissions")
-db.create_results_tables("URL1245")
-#db.remove_tables("URL1245")
-db.close_connection()
-'''
