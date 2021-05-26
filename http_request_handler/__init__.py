@@ -132,7 +132,6 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
     if error:
         sentlog.append(f"ERROR! {error}.\n")
         return func.HttpResponse(error, status_code=400)
-    #sentlog.append("Saved request to database.")
 
    # ------------------------ CONVERT INCOMING DATA ----------------------------
 
