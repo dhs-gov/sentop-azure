@@ -1,4 +1,3 @@
-import nltk
 from globals import globalvars
 from globals import globalutils
 import re

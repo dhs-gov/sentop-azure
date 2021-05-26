@@ -1,17 +1,9 @@
 import logging
-import sys
-import os
 import io
-from io import BytesIO
-from io import StringIO
 import nltk
 nltk.download('punkt', download_dir='.')
 #nltk.data.path.append("/")
-from globals import globalvars
 from globals import globalutils
-import json
-import openpyxl
-from openpyxl import Workbook
 from openpyxl import load_workbook
 from database import postgres
 import urllib3

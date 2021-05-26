@@ -1,4 +1,3 @@
-import logging
 from collections import Counter
 from adaptnlp import EasySequenceClassifier
 from topic_modeling import topmod_bertopic

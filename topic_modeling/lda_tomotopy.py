@@ -1,10 +1,7 @@
-import logging
-from nltk.tokenize import word_tokenize
 import tomotopy as tp
 from globals import globalutils
 # NLTK Lemmatizer does not work well
 import re
-from database import postgres
 #from transformers import AutoTokenizer, AutoModelForTokenClassification, TokenClassificationPipeline
 from . import config_topic_mod as config     
 from globals import globalutils
@@ -76,16 +73,6 @@ def get_coherence(data_preprocessed, k):
     #print('Average:', average_coherence, '\nPer Topic:', coherence_per_topic)
     #print()
 
-    '''
-    # calculate coherence using custom combination
-    for seg, cm, im in itertools.product(tp.coherence.Segmentation, tp.coherence.ConfirmMeasure, tp.coherence.IndirectMeasure):
-        coh = tp.coherence.Coherence(mdl, coherence=(tp.coherence.ProbEstimation.DOCUMENT, seg, cm, im))
-        average_coherence = coh.get_score()
-        coherence_per_topic = [coh.get_score(topic_id=k) for k in range(mdl.k)]
-        print('==== Coherence : {}, {}, {} ===='.format(repr(seg), repr(cm), repr(im)))
-        print('Average:', average_coherence, '\nPer Topic:', coherence_per_topic)
-        print()
-    '''
 
     return coherence_score
 
@@ -199,44 +186,6 @@ def clean_stop(data_list, stop_words):
     return cleaned
 
 
-'''
-def lemmatize(data_list, stop_words):
-
-    tokenizer = AutoTokenizer.from_pretrained("vblagoje/bert-english-uncased-finetuned-pos")
-    model = AutoModelForTokenClassification.from_pretrained("vblagoje/bert-english-uncased-finetuned-pos")
-    p = TokenClassificationPipeline(model=model, tokenizer=tokenizer)
-
-    pat = re.compile('[a-z]{2,}$')
-
-    lemmatizer = WordNetLemmatizer()
-    lemmatized_data_list = []
-    for text in data_list:
-        lemmatized_sentence = ""
-        pos = p(text)
-        for token in pos:
-            #print("token: ", token)
-            word = token.get("word")
-            #print("word: ", word)
-            part = token.get("entity")
-            #print("part: ", part)
-            if part == 'NOUN' or part == 'PRON':
-                word = lemmatizer.lemmatize(word, 'n')
-            elif part == 'VERB':
-                word = lemmatizer.lemmatize(word, 'v')
-            elif part == 'ADV':
-                word = lemmatizer.lemmatize(word, 'r')
-            elif part == 'ADJ':
-                word = lemmatizer.lemmatize(word, 's')
-
-            if (not word in stop_words and pat.match(word)):
-                lemmatized_sentence = lemmatized_sentence + " " + word
-
-            #print("Lemmatized sentence: ", lemmatized_sentence)
-        lemmatized_data_list.append(lemmatized_sentence)
-
-    return lemmatized_data_list
-'''
-
 def check_duplicate_words_across_topics(topics_list):
     duplicate_words = []
     for topic in topics_list:
@@ -277,22 +226,6 @@ def get_topics(data_list, stop_words):
     data_preprocessed = clean_stop(data_list, stop_words)
     #data_preprocessed = lemmatize(data_preprocessed, stop_words)
 
-    '''
-    for row in data_list:
-        # NLTK stemmer did not work well, so use Porter stemmer instead
-        #lemmatized = [lmtzr.lemmatize(word) for word in word_tokenize(row.lower())]
-        
-        stemmed = [stem(word) for word in row.lower().split(" ")]
-
-        preprocessed_tokens = [word for word in stemmed if (not word in stop_words and pat.match(word))]
-        preprocessed_doc = (" ").join(preprocessed_tokens)
-        if preprocessed_doc:
-            data_preprocessed.append(preprocessed_doc)
-        else:
-            # Use null to denote empty docs, possibly due to blank row or words being all stop words
-            data_preprocessed.append("null")
-
-    '''
 
     # ------------------------- GET COHERENCE SCORES -------------------------
 

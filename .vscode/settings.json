@@ -22,6 +22,7 @@
     "hdbscan",
     "isalpha",
     "ldawords",
+    "lemmatizer",
     "ngram",
     "nlptown",
     "nltk",

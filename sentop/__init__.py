@@ -1,4 +1,3 @@
-import logging
 import azure.durable_functions as df
 
 

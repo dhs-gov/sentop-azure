@@ -1,14 +1,9 @@
-import logging
 from sklearn.feature_extraction.text import CountVectorizer
 from bertopic import BERTopic
 from flair.embeddings import TransformerDocumentEmbeddings
-from . import config_topic_mod
 from globals import globalutils
-from globals import globalvars
 import numpy as np
-import nltk
 from nltk.tokenize import word_tokenize
-from database import postgres
 from . import config_topic_mod as config     
 
 class Topic:

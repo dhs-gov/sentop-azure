@@ -12,7 +12,6 @@ import nltk
 from nltk.tokenize import word_tokenize
 import string
 from openpyxl import Workbook
-from openpyxl.utils import get_column_letter
 
 
 def column(matrix, i):
