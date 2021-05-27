@@ -54,8 +54,8 @@ class Database:
             cur.execute(sql, data)
             self.conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
-            print("Error executing postgres statement with data: ", error)
+        except (Exception, psycopg2.DatabaseError) as e:
+            print(f"Error executing postgres statement with data: {e}")
 
 
     def table_exists(self, tablename):
@@ -67,8 +67,8 @@ class Database:
             cur.close()
             return bool(cur.rowcount)
 
-        except (Exception, psycopg2.DatabaseError) as error:
-            print("Error checking if postgres table exists: ", error)
+        except (Exception, psycopg2.DatabaseError) as e:
+            print(f"Error checking if postgres table exists: {e}")
             return bool(cur.rowcount)
 
 
@@ -79,8 +79,8 @@ class Database:
             stmt = "DROP TABLE " + tablename
             self.execute_stmt(stmt)
 
-        except (Exception, psycopg2.DatabaseError) as error:
-            print("Error removing postgres table: ", error)
+        except (Exception, psycopg2.DatabaseError) as e:
+            print(f"Error removing postgres table: {e}")
 
 
     # Remove all tables associated with ID
@@ -89,15 +89,15 @@ class Database:
             self.remove_table(id + self.results_table_suffix)
             self.remove_table(id + self.lda_words_table_suffix)
             self.remove_table(id + self.bertopic_words_table_suffix)
-        except (Exception, psycopg2.DatabaseError) as error:
-            print("Error removing all postgres tables: ", error)
+        except (Exception, psycopg2.DatabaseError) as e:
+            print(f"Error removing all postgres tables: {e}")
 
 
     def add_result(self, tablename):
         try:
             print("Test")
-        except (Exception, psycopg2.DatabaseError) as error:
-            print("Error adding postgres results: ", error)
+        except (Exception, psycopg2.DatabaseError) as e:
+            print(f"Error adding postgres results: {e}")
 
 
     def clear_table(self, tablename):
@@ -105,8 +105,8 @@ class Database:
         try:
             stmt = "DELETE FROM " + tablename
             self.execute_stmt(stmt)
-        except (Exception, psycopg2.DatabaseError) as error:
-            print("Error clearing postgres table: ", error)
+        except (Exception, psycopg2.DatabaseError) as e:
+            print(f"Error clearing postgres table: {e}")
 
 
    # ------------------------------ SUBMISSIONS -------------------------------
@@ -314,9 +314,15 @@ class Database:
         finally:
             self.close_connection()
 
+
+    def get_sentiment(self, id, sentiments):
+        for sentiment in sentiments:
+            if sentiment.id == id:
+                return sentiment
+
     # -------------------------------- RESULTS ----------------------------------
 
-    def create_result_table(self, id, id_list, data_list, class3_sentiment_rows, star5_sentiment_rows, bert_sentence_topics, bertopic_topics, lda_sentence_topics, lda_topics):
+    def create_result_table(self, id, id_list, data_list, sentiment_results, bert_sentence_topics, bertopic_topics, lda_sentence_topics, lda_topics):
         
         # NOTE: data is a list of [id, text]
         #num_list = globalutils.column(data, 0)
@@ -331,8 +337,13 @@ class Database:
             self.remove_table(tablename)
             #print("Removed existing results table: ", tablename)
 
+        class3 = self.get_sentiment('class3', sentiment_results)
+        class5 = self.get_sentiment('class5', sentiment_results)
+        emotion1 = self.get_sentiment('emotion1', sentiment_results)
+        offensive1 = self.get_sentiment('offensive1', sentiment_results)
+
         try:
-            stmt = ("CREATE TABLE " + tablename + "(num text NOT NULL, doc text, class3 text, class5 text, lda text, bertopic text, PRIMARY KEY (num))")
+            stmt = ("CREATE TABLE " + tablename + "(num text NOT NULL, doc text, class3 text, class5 text, emotion1 text, offensive1 text, lda text, bertopic text, PRIMARY KEY (num))")
             self.execute_stmt(stmt)
             #num = 0
 
@@ -348,8 +359,8 @@ class Database:
                     #print("3Class: ", class3_sentiment_rows[i].sentiment)
                     #print("5Class: ", star5_sentiment_rows[i].sentiment)
 
-                    stmt = ("INSERT INTO " + tablename + "(num, doc, class3, class5, lda, bertopic) VALUES (%s,%s,%s,%s,%s,%s)")
-                    data = (id_list[i], data_list[i], class3_sentiment_rows[i].sentiment, star5_sentiment_rows[i].sentiment, lda_topic, bert_topic)
+                    stmt = ("INSERT INTO " + tablename + "(num, doc, class3, class5, emotion1, offensive1, lda, bertopic) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)")
+                    data = (id_list[i], data_list[i], class3.data_list[i], class5.data_list[i], emotion1.data_list[i], offensive1.data_list[i], lda_topic, bert_topic)
                     self.execute_stmt_data(stmt, data)
                 #num = num + 1
             print("---------------------------------")

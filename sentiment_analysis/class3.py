@@ -1,22 +1,7 @@
 from globals import globalutils
-import pprint
 
 
-def truncate(f, n):
-    '''Truncates/pads a float f to n decimal places without rounding'''
-    s = '{}'.format(f)
-    if 'e' in s or 'E' in s:
-        return '{0:.{1}f}'.format(f, n)
-    i, p, d = s.partition('.')
-    return '.'.join([i, (d + '0' * n)[:n]])
-
-
-class Sentiment:
-    def __init__(self, sentiment, negative, neutral, positive):
-        self.sentiment = sentiment
-        self.negative = float(truncate(negative, 3))
-        self.neutral = float(truncate(neutral, 3))
-        self.positive = float(truncate(positive, 3))
+model_name = "cardiffnlp/twitter-roberta-base-sentiment"
 
 
 def calc_sentiment(confidence_score):
@@ -24,7 +9,7 @@ def calc_sentiment(confidence_score):
     largest_score = 0.0
 
     for label in confidence_score.labels:
-        print("3CLASS LABEL: ", label)
+        #print("3CLASS LABEL: ", label)
         if label.score > largest_score:
             largest_label = str(label)
             largest_score = label.score
@@ -50,31 +35,20 @@ def get_sentiment(classifier, text):
             text=text,
             #"nlptown/bert-base-multilingual-uncased-sentiment"
             #"cardiffnlp/twitter-roberta-base-emotion"
-            model_name_or_path="cardiffnlp/twitter-roberta-base-sentiment",
+            model_name_or_path=model_name,
             mini_batch_size=1
         )
     globalutils.enable_logging()
 
-
-
     # This should only loop once
     for confidence_score in confidence_scores:
-
-        #pprint({confidence_score.to_original_text(): confidence_score.labels})
-
-
-        sentiment = Sentiment(
-            calc_sentiment(confidence_score),
-            confidence_score.labels[0].score,
-            confidence_score.labels[1].score,
-            confidence_score.labels[2].score)
-        return sentiment
+        return calc_sentiment(confidence_score)
 
 
 def assess(classifier, docs):
     sentlog = globalutils.SentopLog()
     sentlog.append("----------------------------------------------------------")
-    sentlog.append("Assessing 3-class sentiment. Please wait...")
+    sentlog.append(f"Assessing 3-class ({model_name}). Please wait...")
     sentiments = []
     i = 0
     for doc in docs:
@@ -90,4 +64,4 @@ def assess(classifier, docs):
         #    print("Processing 3-class: ", i)
         i = i + 1
 
-    return sentiments
+    return globalutils.Sentiments("class3", f"3-Class ({model_name})", model_name, "polarity", sentiments)

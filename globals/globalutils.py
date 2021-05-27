@@ -1,6 +1,6 @@
 import os
 from contextlib import contextmanager,redirect_stderr,redirect_stdout
-from os import devnull
+from os import devnull, name
 import sys
 import logging
 import psutil
@@ -13,6 +13,14 @@ from nltk.tokenize import word_tokenize
 import string
 from openpyxl import Workbook
 
+
+class Sentiments:
+    def __init__(self, id, name, model_name, type, data_list):
+        self.id = id
+        self.name = name
+        self.model_name = model_name
+        self.type = type
+        self.data_list = data_list
 
 def column(matrix, i):
     return [row[i] for row in matrix]
@@ -144,7 +152,14 @@ def get_frozen_stopwords(user_stop_words):
     return all_stop_words
 
 
-def generate_excel(id, annotation, num_list, data_list, bert_sentence_topics, lda_sentence_topics, class3_sentiment_rows, star5_sentiment_rows, emotion_rows, hate_rows, irony_rows, offensive_rows, bert_topics, lda_topics, bert_duplicate_words, lda_duplicate_words):
+def get_sentiment(id, sentiments):
+    for r in sentiments:
+        if r.id == id:
+            print(f"Found ID: {r.id}")
+            return r
+
+
+def generate_excel(id, annotation, num_list, data_list, bert_sentence_topics, lda_sentence_topics, sentiment_results, bert_topics, lda_topics, bert_duplicate_words, lda_duplicate_words):
    
     # NOTE: data is a list of [id, text]
     #num_list = column(data, 0)
@@ -152,6 +167,16 @@ def generate_excel(id, annotation, num_list, data_list, bert_sentence_topics, ld
 
     #input_dir_path = config.data_dir_path.get("input")
     output_dir_path = config.data_dir_path.get("output")
+
+    for r in sentiment_results:
+        print(f"Got Exel id: {r.id}")
+        print(f"GOt Excel list: {r.data_list}")
+
+    class3 = get_sentiment('class3', sentiment_results)
+    print(f"class3 type: {type(class3)}")
+    class5 = get_sentiment('class5', sentiment_results)
+    emotion1 = get_sentiment('emotion1', sentiment_results)
+    offensive1 = get_sentiment('offensive1', sentiment_results) 
 
     # Create results data
     rows = []
@@ -162,12 +187,10 @@ def generate_excel(id, annotation, num_list, data_list, bert_sentence_topics, ld
             row_data.append(data_list[i])
             row_data.append(bert_sentence_topics[i])
             row_data.append(lda_sentence_topics[i])
-            row_data.append(class3_sentiment_rows[i].sentiment)
-            row_data.append(star5_sentiment_rows[i].sentiment)
-            row_data.append(emotion_rows[i].sentiment)
-            row_data.append(hate_rows[i].sentiment)
-            row_data.append(irony_rows[i].sentiment)
-            row_data.append(offensive_rows[i].sentiment)
+            row_data.append(class3.data_list[i])
+            row_data.append(class5.data_list[i])
+            row_data.append(emotion1.data_list[i])
+            row_data.append(offensive1.data_list[i])
             rows.append(row_data)
 
 
@@ -176,7 +199,7 @@ def generate_excel(id, annotation, num_list, data_list, bert_sentence_topics, ld
     xlsx_out = output_dir_path + "\\" + id + "_results.xlsx"
     ws1 = wb.active
     ws1.title = "Results"
-    ws1.append(['Id', 'Text', 'BERTopic Topic', 'LDA Topic', '3-Class Sentiment', '5-Star Sentiment', 'Emotion', 'Hate', 'Irony', 'Offensive'])
+    ws1.append(['Id', 'Text', 'BERTopic Topic', 'LDA Topic', class3.name, class5.name, emotion1.name, offensive1.name])
     for i in range(len(rows)):
         ws1.append(rows[i])
 

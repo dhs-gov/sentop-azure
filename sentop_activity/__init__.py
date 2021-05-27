@@ -6,10 +6,9 @@ from topic_modeling import lda_tomotopy
 from sentiment_analysis import class3 
 from sentiment_analysis import class5 
 from sentiment_analysis import emotion 
-from sentiment_analysis import hate 
-from sentiment_analysis import irony 
+#from sentiment_analysis import hate -- couldn't detect hate
+#from sentiment_analysis import irony -- lots of false positives/negatives
 from sentiment_analysis import offensive 
-
 
 from globals import globalutils
 import json
@@ -18,6 +17,7 @@ from database import postgres
 import sentop_config as config
 import time
 
+'''
 class Result:
     def __init__(self, result, bert_topics, lda_topics):
         self.result = result
@@ -44,25 +44,39 @@ class Word:
     def __init__(self, word, weight):
         self.word = word
         self.weight = weight
+'''
+
+class Sentiments:
+    def __init__(self, id, name, nlp_model_name, type_name, data_list):
+        self.id = id
+        self.name = name
+        self.nlp_model_name = nlp_model_name
+        self.type_name = type_name
+        self.data_list = data_list
 
 
-def get_sentiments(data_list, sentlog):
+def get_sentiments(data_list, sentlog): 
     sentlog = globalutils.SentopLog()
     classifier = EasySequenceClassifier()
-    class3_sentiment_rows = class3.assess(classifier, data_list)
-    sentlog.append(f"3 class length: {len(class3_sentiment_rows)}")
-    star5_sentiment_rows = class5.assess(classifier, data_list)
-    sentlog.append(f"5 class length: {len(star5_sentiment_rows)}")
-    emotion_rows = emotion.assess(classifier, data_list)
-    sentlog.append(f"emotion length: {len(emotion_rows)}")
-    hate_rows = hate.assess(classifier, data_list)
-    sentlog.append(f"hate length: {len(hate_rows)}")
-    irony_rows = irony.assess(classifier, data_list)
-    sentlog.append(f"irony length: {len(irony_rows)}")
-    offensive_rows = offensive.assess(classifier, data_list)
-    sentlog.append(f"offensive length: {len(offensive_rows)}")
+    sentiment_results = []
 
-    return class3_sentiment_rows, star5_sentiment_rows, emotion_rows, hate_rows, irony_rows, offensive_rows
+    class3_results = class3.assess(classifier, data_list)
+    sentiment_results.append(class3_results)
+    sentlog.append(f"Done")
+
+    class5_results = class5.assess(classifier, data_list)
+    sentiment_results.append(class5_results)
+    sentlog.append(f"Done")
+
+    emotion_results = emotion.assess(classifier, data_list)
+    sentiment_results.append(emotion_results)
+    sentlog.append(f"Done")
+
+    offensive_results = offensive.assess(classifier, data_list)
+    sentiment_results.append(offensive_results)
+    sentlog.append(f"Done")
+
+    return sentiment_results
 
 
 class Response:
@@ -103,7 +117,11 @@ def main(name: object) -> json:
     # ---------------------------- GET SENTIMENTS ------------------------------
 
     # Perform sentiment analyses
-    class3_sentiment_rows, star5_sentiment_rows, emotion_rows, hate_rows, irony_rows, offensive_rows = get_sentiments(data_list, sentlog)
+    sentiment_results = get_sentiments(data_list, sentlog)
+
+    for r in sentiment_results:
+        print(f"Got id: {r.id}")
+        print(f"GOt list: {r.data_list}")
     
     # ----------------------------- GET BERTopic -------------------------------
 
@@ -148,14 +166,14 @@ def main(name: object) -> json:
 
     # Write to database
     db = postgres.Database()
-    db.create_result_table(sentop_id, row_id_list, data_list, class3_sentiment_rows, star5_sentiment_rows, bert_sentence_topics, bert_topics, lda_sentence_topics, lda_topics)
+    db.create_result_table(sentop_id, row_id_list, data_list, sentiment_results, bert_sentence_topics, bert_topics, lda_sentence_topics, lda_topics)
     
     sentlog.append("----------------------------------------------------------")
     sentlog.append(f"Created PostgreSQL tables for SENTOP ID: {sentop_id}")
 
     # ---------------------------- RESULTS TO XLSX -----------------------------
 
-    globalutils.generate_excel(sentop_id, annotation, row_id_list, data_list, bert_sentence_topics, lda_sentence_topics, class3_sentiment_rows, star5_sentiment_rows, emotion_rows, hate_rows, irony_rows, offensive_rows, bert_topics, lda_topics, bert_duplicate_words, lda_duplicate_words)
+    globalutils.generate_excel(sentop_id, annotation, row_id_list, data_list, bert_sentence_topics, lda_sentence_topics, sentiment_results, bert_topics, lda_topics, bert_duplicate_words, lda_duplicate_words)
 
     sentlog.append(f"Generated Excel files for SENTOP ID: {sentop_id}")
 
