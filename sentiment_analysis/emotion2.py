@@ -1,36 +1,55 @@
 '''
-This model classifies sentiment polaritys using the following labels:
-negative
-neutral
-positive
+This model classifies emotion using the following labels:
+admiration
+amusement 
+anger
+annoyance 
+approval 
+caring
+confusion 
+curiosity 
+desire
+disappointment
+disapproval
+disgust
+embarrassment   
+excitement
+fear
+gratitude 
+grief
+joy
+love
+nervousness
+neutral     
+optimism  
+pride
+realization
+relief
+remorse
+sadness
+surprise  
 '''
 
 from globals import globalutils
 
 
-model_name = "cardiffnlp/twitter-roberta-base-sentiment"
+model_name = "monologg/bert-base-cased-goemotions-original"
 
 
 def calc_sentiment(confidence_score):
-    largest_label = 'LABEL_0'
+    largest_label = 'LABEL_0' 
     largest_score = 0.0
 
     for label in confidence_score.labels:
-        #print("3CLASS LABEL: ", label)
+        #print("Emotion2 INTENT LABEL: ", label) 
         if label.score > largest_score:
             largest_label = str(label)
             largest_score = label.score
+            #print(f"Largest score: {largest_score}")
 
-    #print("largest_label: ", largest_label)
-    if "LABEL_0" in largest_label:
-        return "negative"
-    elif "LABEL_1" in largest_label:
-        return "neutral"
-    elif "LABEL_2" in largest_label:
-        return "positive"
-    else:
-        print("WARNING: unknown sentiment")
-        return "neutral"
+    labels = largest_label.split()
+    #print(f"largest label: {labels[0]}")
+    return labels[0]
         
 
 def get_sentiment(classifier, text):
@@ -47,15 +66,18 @@ def get_sentiment(classifier, text):
         )
     globalutils.enable_logging()
 
+
     # This should only loop once
     for confidence_score in confidence_scores:
+        #print(f"INTENT: {confidence_score.to_plain_string()}")
+
         return calc_sentiment(confidence_score)
 
 
 def assess(classifier, docs):
     sentlog = globalutils.SentopLog()
     sentlog.append("----------------------------------------------------------")
-    sentlog.append(f"Assessing 3-class ({model_name}). Please wait...")
+    sentlog.append(f"Assessing emotion2 ({model_name}). Please wait...")
     sentiments = []
     i = 0
     for doc in docs:
@@ -71,4 +93,4 @@ def assess(classifier, docs):
         #    print("Processing 3-class: ", i)
         i = i + 1
 
-    return globalutils.Sentiments("class3", f"3-Class ({model_name})", model_name, "polarity", sentiments)
+    return globalutils.Sentiments("emotion2", f"Emotion2 ({model_name})", model_name, "emotion", sentiments)

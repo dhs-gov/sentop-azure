@@ -1,3 +1,11 @@
+'''
+This model classifies emotion using the following labels:
+anger
+joy
+optimism
+sadness 
+'''
+
 from globals import globalutils
 
 model_name = "cardiffnlp/twitter-roberta-base-emotion"
@@ -65,5 +73,5 @@ def assess(classifier, docs):
         #    print("Processing 5-class: ", i)
         i = i + 1
 
-    return globalutils.Sentiments("emotion1", f"Emotion ({model_name})", model_name, "emotion", sentiments)
+    return globalutils.Sentiments("emotion1", f"Emotion1 ({model_name})", model_name, "emotion", sentiments)
 

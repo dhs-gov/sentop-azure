@@ -1,3 +1,9 @@
+'''
+This model classifies offensive text using the following labels:
+not_offensive
+offensive
+'''
+
 from globals import globalutils
 
 model_name = "cardiffnlp/twitter-roberta-base-offensive"

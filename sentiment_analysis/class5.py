@@ -1,3 +1,12 @@
+'''
+This model classifies sentiment polarity using the following labels:
+1 star
+2 stars
+3 stars
+4 stars
+5 stars
+'''
+
 from globals import globalutils
 
 model_name = "nlptown/bert-base-multilingual-uncased-sentiment"

@@ -5,10 +5,11 @@ from topic_modeling import topmod_bertopic
 from topic_modeling import lda_tomotopy
 from sentiment_analysis import class3 
 from sentiment_analysis import class5 
-from sentiment_analysis import emotion 
+from sentiment_analysis import emotion1 
+from sentiment_analysis import emotion2
 #from sentiment_analysis import hate -- couldn't detect hate
 #from sentiment_analysis import irony -- lots of false positives/negatives
-from sentiment_analysis import offensive 
+from sentiment_analysis import offensive1 
 
 from globals import globalutils
 import json
@@ -68,12 +69,16 @@ def get_sentiments(data_list, sentlog):
     sentiment_results.append(class5_results)
     sentlog.append(f"Done")
 
-    emotion_results = emotion.assess(classifier, data_list)
+    emotion_results = emotion1.assess(classifier, data_list)
     sentiment_results.append(emotion_results)
     sentlog.append(f"Done")
 
-    offensive_results = offensive.assess(classifier, data_list)
+    offensive_results = offensive1.assess(classifier, data_list)
     sentiment_results.append(offensive_results)
+    sentlog.append(f"Done")
+
+    emotion2_results = emotion2.assess(classifier, data_list)
+    sentiment_results.append(emotion2_results)
     sentlog.append(f"Done")
 
     return sentiment_results
@@ -119,9 +124,9 @@ def main(name: object) -> json:
     # Perform sentiment analyses
     sentiment_results = get_sentiments(data_list, sentlog)
 
-    for r in sentiment_results:
-        print(f"Got id: {r.id}")
-        print(f"GOt list: {r.data_list}")
+    #for r in sentiment_results:
+    #    print(f"Got id: {r.id}")
+    #    print(f"GOt list: {r.data_list}")
     
     # ----------------------------- GET BERTopic -------------------------------
 
