@@ -12,7 +12,9 @@ import nltk
 from nltk.tokenize import word_tokenize
 import string
 from openpyxl import Workbook
-
+from openpyxl.styles import Color, PatternFill, Font, Border
+from openpyxl.styles import colors
+from openpyxl.cell import Cell
 
 class Sentiments:
     def __init__(self, id, name, model_name, type, data_list):
@@ -177,6 +179,7 @@ def generate_excel(id, annotation, num_list, data_list, bert_sentence_topics, ld
     class5 = get_sentiment('class5', sentiment_results)
     emotion1 = get_sentiment('emotion1', sentiment_results)
     offensive1 = get_sentiment('offensive1', sentiment_results) 
+    emotion2 = get_sentiment('emotion2', sentiment_results)
 
     # Create results data
     rows = []
@@ -190,6 +193,7 @@ def generate_excel(id, annotation, num_list, data_list, bert_sentence_topics, ld
             row_data.append(class3.data_list[i])
             row_data.append(class5.data_list[i])
             row_data.append(emotion1.data_list[i])
+            row_data.append(emotion2.data_list[i])
             row_data.append(offensive1.data_list[i])
             rows.append(row_data)
 
@@ -199,7 +203,27 @@ def generate_excel(id, annotation, num_list, data_list, bert_sentence_topics, ld
     xlsx_out = output_dir_path + "\\" + id + "_results.xlsx"
     ws1 = wb.active
     ws1.title = "Results"
-    ws1.append(['Id', 'Text', 'BERTopic Topic', 'LDA Topic', class3.name, class5.name, emotion1.name, offensive1.name])
+    ws1.append(['ID', 'Text', 'BERTopic Topic', 'LDA Topic', class3.name, class5.name, emotion1.name, emotion2.name, offensive1.name])
+    ws1['A1'].font = Font(bold=True)
+    ws1['B1'].font = Font(bold=True)
+    # Topic columns
+    ws1['C1'].fill = PatternFill(start_color='FF66FF66', end_color='FF66FF66', fill_type='solid')
+    ws1['C1'].font = Font(bold=True)
+    ws1['D1'].fill = PatternFill(start_color='FF66FF66', end_color='FF66FF66', fill_type='solid')
+    ws1['D1'].font = Font(bold=True)
+    # Polarity sentiment columns
+    ws1['E1'].fill = PatternFill(start_color='FF66FFFF', end_color='FF66FFFF', fill_type='solid')
+    ws1['E1'].font = Font(bold=True)
+    ws1['F1'].fill = PatternFill(start_color='FF66FFFF', end_color='FF66FFFF', fill_type='solid')
+    ws1['F1'].font = Font(bold=True)
+    # Emotion sentiment columns
+    ws1['G1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
+    ws1['G1'].font = Font(bold=True)
+    ws1['H1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
+    ws1['H1'].font = Font(bold=True)
+    ws1['I1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
+    ws1['I1'].font = Font(bold=True)
+    
     for i in range(len(rows)):
         ws1.append(rows[i])
 
