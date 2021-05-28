@@ -341,9 +341,10 @@ class Database:
         class5 = self.get_sentiment('class5', sentiment_results)
         emotion1 = self.get_sentiment('emotion1', sentiment_results)
         offensive1 = self.get_sentiment('offensive1', sentiment_results)
+        emotion2 = self.get_sentiment('emotion2', sentiment_results)
 
         try:
-            stmt = ("CREATE TABLE " + tablename + "(num text NOT NULL, doc text, class3 text, class5 text, emotion1 text, offensive1 text, lda text, bertopic text, PRIMARY KEY (num))")
+            stmt = ("CREATE TABLE " + tablename + "(num text NOT NULL, doc text, class3 text, class5 text, emotion1 text, emotion2, offensive1 text, lda text, bertopic text, PRIMARY KEY (num))")
             self.execute_stmt(stmt)
             #num = 0
 
@@ -359,8 +360,8 @@ class Database:
                     #print("3Class: ", class3_sentiment_rows[i].sentiment)
                     #print("5Class: ", star5_sentiment_rows[i].sentiment)
 
-                    stmt = ("INSERT INTO " + tablename + "(num, doc, class3, class5, emotion1, offensive1, lda, bertopic) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)")
-                    data = (id_list[i], data_list[i], class3.data_list[i], class5.data_list[i], emotion1.data_list[i], offensive1.data_list[i], lda_topic, bert_topic)
+                    stmt = ("INSERT INTO " + tablename + "(num, doc, class3, class5, emotion1, emotion2, offensive1, lda, bertopic) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)")
+                    data = (id_list[i], data_list[i], class3.data_list[i], class5.data_list[i], emotion1.data_list[i], emotion2.data_list[i], offensive1.data_list[i], lda_topic, bert_topic)
                     self.execute_stmt_data(stmt, data)
                 #num = num + 1
             print("---------------------------------")
