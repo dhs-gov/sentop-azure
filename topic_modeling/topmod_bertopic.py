@@ -6,13 +6,6 @@ import numpy as np
 from nltk.tokenize import word_tokenize
 from . import config_topic_mod as config     
 
-'''
-class Topic:
-    def __init__(self, topic_num, words, weights):
-        self.topic_num = topic_num
-        self.words = words
-        self.weights = weights
-'''
 
 def check_best_overlapping_words_across_topics(topic_model, topics_no_duplicates):
     best_overlapping_words = []

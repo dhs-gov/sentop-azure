@@ -18,20 +18,7 @@ def get_json_payload(json_obj):
     annotation = None
     try:
         user_stop_words = json_obj.get('user_stop_words')
-        '''
-        if user_stop_words:
-            sentlog.append(f"Found JSON user stop words: {user_stop_words}.<br>")
-        else:
-            sentlog.append("<div style=\"color: #e97e16; \">WARNING!</div> JSON user stop words empty or undefined.<br>")
-        '''
-
         annotation = json_obj.get('annotation')
-        '''
-        if annotation:
-            sentlog.append(f"Found JSON user annotation: {annotation}.<br>")
-        else:
-            sentlog.append("WARNING! JSON user annotation empty or undefined.<br>")      
-        '''
 
         docs = json_obj.get('documents')
         row_id_list = []

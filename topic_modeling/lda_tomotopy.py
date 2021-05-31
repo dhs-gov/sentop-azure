@@ -7,18 +7,11 @@ from . import config_topic_mod as config
 from globals import globalutils
 from data_util import data_cleaner
 
+'''
 class KeyWeight:
     def __init__(self, key, weight):
         self.key = key
         self.weight = weight
-
-
-'''
-class Topic:
-    def __init__(self, topic_num, words, weights):
-        self.topic_num = topic_num
-        self.words = words
-        self.weights = weights
 '''
 
 def get_coherence(data_preprocessed, k):
@@ -158,35 +151,6 @@ def bert_to_wordnet_pos_tag(bert_tag):
     else:          
         return None
 
-
-'''
-# LDA performs additional preprocessing by removing some words and punctuation
-# to surface only the most salient words:
-# - Removes all punctuation from a doc.
-# - Removes any word with less than 2 characters from a doc.
-# - Lowercases all words in a doc.
-# - Removes all words found in the stop words list.
-def clean_stop(data_list, stop_words):
-
-    cleaned = []
-    for text in data_list:
-        # Remove all punctuation (NOTE: this is not removing some periods for some reason)
-        text = re.sub(r'[^\w\s]', ' ', text)
-        words = text.split()   
-        cleaned_sentence = ""
-        for word in words:
-            word = word.lower()
-            if not word in stop_words and not word.isdigit() and len(word) > 2   :
-                    cleaned_sentence = cleaned_sentence + " " + word
-
-        if not cleaned_sentence:
-            # We don't want empty docs at this point, so use orig text.
-            cleaned_sentence = text.lower()
-            print(f"WARNING! Cleaning resulted in empty text. Using orig text: {cleaned_sentence}.")
-        cleaned.append(cleaned_sentence)
-
-    return cleaned
-'''
 
 def check_duplicate_words_across_topics(topics_list):
     duplicate_words = []

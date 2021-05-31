@@ -19,34 +19,6 @@ from database import postgres
 import sentop_config as config
 import time
 
-'''
-class Result:
-    def __init__(self, result, bert_topics, lda_topics):
-        self.result = result
-        self.bert_topics = bert_topics
-        self.lda_topics = lda_topics
-
-
-class Paragraph:
-    def __init__(self, text, bertopic, lda, class3, star5):
-        self.text = text
-        self.bertopic = bertopic
-        self.lda = lda
-        self.class3 = class3
-        self.star5 = star5
-
-
-class Topic:
-    def __init__(self, topic_num, word_weight):
-        self.topic_num = topic_num
-        self.word_weight = word_weight
-
-
-class Word:
-    def __init__(self, word, weight):
-        self.word = word
-        self.weight = weight
-'''
 
 class Sentiments:
     def __init__(self, id, name, nlp_model_name, type_name, data_list):
@@ -61,7 +33,6 @@ def get_sentiments(data_list, sentlog):
     sentlog = globalutils.SentopLog()
     classifier = EasySequenceClassifier()
     sentiment_results = []
-
 
     class3_results = class3.assess(classifier, data_list)
     sentiment_results.append(class3_results)
