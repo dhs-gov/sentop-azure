@@ -22,3 +22,4 @@ tomotopy
 psycopg2
 urllib3
 transformers
+top2vec
