@@ -11,7 +11,6 @@ from globals import globalutils
 
 model_name = "cardiffnlp/twitter-roberta-base-sentiment"
 
-
 def calc_sentiment(confidence_score):
     largest_label = 'LABEL_0'
     largest_score = 0.0
