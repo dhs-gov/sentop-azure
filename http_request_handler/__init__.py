@@ -7,6 +7,8 @@ from data_util import data_cleaner
 from database import postgres
 from globals import globalutils
 from datetime import datetime
+from dateutil import tz
+import sentop_config as config
 
 class DataIn:
     def __init__(self, kms_id, sentop_id, row_id_list, data_list, all_stop_words, annotation):
@@ -39,7 +41,6 @@ def check_query_params(req):
         return None, None, test_requested, False
 
     kms_id = req.params.get('id')
-    sentlog.append(f"KMS ID: {kms_id}")
 
     if not kms_id:
         return None, None, False, "Query parameter 'id' not received."
@@ -63,8 +64,14 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
     sentlog.clear()
 
     print(">>>>>>>>>>>>>>>>>> S T A R T >>>>>>>>>>>>>>>>")
-    sentlog.append("S E N T O P   L O G\n")
-    sentlog.append(f"Date/Time: {datetime.utcnow()}")
+    sentlog.append("<br><br><div style=\"line-height: 110%; text-align: center; font-size: 30px; font-weight: bold;\">SENTOP</div>\n")
+    sentlog.append("<div style=\"line-height: 160%; text-align: center; font-size: 18px;\"><a href=\"https://github.com/dhs-gov/sentop\" target=\"_blank\">github.com/dhs-gov/sentop</a></div>\n")
+    from_zone = tz.gettz('UTC')
+    to_zone = tz.gettz('America/New_York')
+    utc = datetime.utcnow()
+    utc = utc.replace(tzinfo=from_zone)
+    central = utc.astimezone(to_zone)
+    sentlog.append(f"<div style=\"text-align: center; font-size: 16px;\">{central.strftime('%B %d %Y - %H:%M:%S')} EST</div><br>\n")
 
     # ---------------------------- SET LOGGING ---------------------------------
 
@@ -111,49 +118,70 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
     instances = await client.get_status_all()
     for instance in instances:
         if instance:
-            sentlog.append("WARNING! Old instance still alive!")
+            sentlog.append(f"<div style=\"font-weight: bold; color: #e97e16; \">&#8226; WARNING! Old instance still alive.</div><br>")
 
 
    # -------------------------- CHECK QUERY PARAMS -----------------------------
 
+    sentlog.append("<h1>Request</h1>\n")
+
     sentop_id, kms_id, is_test, error = check_query_params(req)
     if error:
-        sentlog.append(f"ERROR! {error}")
+        sentlog.append(f"<div style=\"font-weight: bold; color: red; \">&#8226; {error}</div><br>")
+        sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse(error, status_code=400)
     if is_test:
         sentlog.append("Test request successful.")
+        sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse("SENTOP test successful.", status_code=200)
-    sentlog.append(f"SENTOP ID: {sentop_id}")
+
+
+    #if kms_id.startswith('http'):
+    #    kms_id = f"<a href=\\\"{kms_id}\\\" target=\\\"_blank\\\">{kms_id}</a>"
+
+    sentlog.append(f"<b>&#8226; KMS ID:</b> {kms_id}<br>")
+    sentlog.append(f"<b>&#8226; SENTOP ID:</b> {sentop_id}")
 
    # ---------------------- SAVE REQUEST DATA TO DB ----------------------------
 
     db = postgres.Database()
     error = db.add_submission(sentop_id, kms_id)
     if error:
-        sentlog.append(f"ERROR! {error}.\n")
+        sentlog.append(f"<div style=\"font-weight: bold; color: red; \">&#8226; {error}</div><br>")
+        sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse(error, status_code=400)
 
    # ------------------------ CONVERT INCOMING DATA ----------------------------
 
+    sentlog.append("<h1>Data</h1>\n")
     row_id_list, data_list, user_stop_words, annotation, error = data_extractor.get_data(req, sentop_id, kms_id)
 
     if error:
-        sentlog.append(f"ERROR! {error}.")
+        sentlog.append(f"<div style=\"font-weight: bold; color: red; \">&#8226; ERROR! Could not find file. Aborting.</div><br>")
+        sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse(error, status_code=400)
     elif not data_list:
-        sentlog.append(f"ERROR! Could not find JSON or file data.\n")
+        sentlog.append(f"<div style=\"color: red; \"ERROR! Could not find JSON or file data.</div><br>")
+        sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse("Error retrieving JSON or file data.", status_code=400)
+    
+    sentlog.append(f"<b>&#8226; Non-blank documents:</b> {len(data_list)}<br>")
 
     if annotation:
+        sentlog.append(f"<b>&#8226; Annotation: </b> {annotation}<br>")
         annotation_error = db.add_annotation(sentop_id, annotation)
-        sentlog.append(f"WARNING! Could not update user annotation in database: {annotation_error}.\n")
+        if annotation_error:
+            sentlog.append(f"<div style=\"font-weight: bold; color: #e97e16; \">&#8226; WARNING! Could not update annotation in database: {annotation_error}.</div><br>")
 
-
-    sentlog.append(f"Num non-blank, highlighted data points found: {len(data_list)}.")
     if len(data_list) != len(row_id_list):
-        sentlog.append("ERROR! Number of rows does not match number of data points. 1")
-        return func.HttpResponse("ERROR! Number of rows does not match number of data points.", status_code=400)
+        sentlog.append("<div style=\"color: red; \">ERROR! Number of rows does not match number of documents.</div><br>")
+        sentlog.write(sentop_id, config.data_dir_path.get("output"))
+        return func.HttpResponse("ERROR! Number of rows does not match number of documents.", status_code=400)
 
+    if not user_stop_words:
+        sentlog.append(f"<div style=\"font-weight: bold; color: #e97e16; \">&#8226; WARNING! No user stop words found.</div>")
+
+        
     #for i in range(len(row_id_list)):
     #    sentlog.append(f"Got: {row_id_list[i]} = {data_list[i]}")
 
@@ -163,12 +191,13 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
 
    # ---------------------- REMOVE INVALID DATAPOINTS --------------------------
 
-    # Apply stopwords and additional checks to remove invalid data points (rows).
+    # Apply stopwords and additional checks to remove invalid documents (rows).
     row_id_list, data_list, error = data_cleaner.remove_invalid_datapoints(row_id_list, data_list, all_stop_words)
 
     if len(data_list) != len(row_id_list):
-        sentlog.append("ERROR! Number of rows does not match number of data points. 2")
-        return func.HttpResponse("ERROR! Number of rows does not match number of data points.", status_code=400)
+        sentlog.append("ERROR! Number of rows does not match number of documents.")
+        sentlog.write(sentop_id, config.data_dir_path.get("output"))
+        return func.HttpResponse("ERROR! Number of rows does not match number of documents.", status_code=400)
 
 
    # ------------------ CREATE JSON DATA FOR AZURE ACTIVITY --------------------

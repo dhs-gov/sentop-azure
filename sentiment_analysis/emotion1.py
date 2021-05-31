@@ -53,11 +53,35 @@ def get_sentiment(classifier, text):
     for confidence_score in confidence_scores:
         return calc_sentiment(confidence_score)
 
+def print_totals(sentiments):
+    sentlog = globalutils.SentopLog()
+    joy = 0
+    anger = 0
+    optimism = 0
+    sadness = 0
+
+    for sentiment in sentiments:
+        if sentiment == 'joy':
+            joy = joy + 1
+        elif sentiment == 'anger':
+            anger = anger + 1
+        elif sentiment == 'optimism':
+            optimism = optimism + 1
+        elif sentiment == 'sadness':
+            sadness = sadness + 1
+
+    sentlog.append(f"<pre>")
+    sentlog.append(f"- Joy: {joy}")
+    sentlog.append(f"- Anger: {anger}")
+    sentlog.append(f"- Optimism: {optimism}")
+    sentlog.append(f"- Sadness: {sadness}")
+    sentlog.append(f"</pre>")
+
 
 def assess(classifier, docs):
     sentlog = globalutils.SentopLog()
-    sentlog.append("----------------------------------------------------------")
-    sentlog.append(f"Assessing emotion ({model_name}). Please wait...")
+    sentlog.append(f"<h2>Emotion 1</h2>\n")
+    sentlog.append(f"<b>Model: </b> <a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a><br>")
     sentiments = []
     i = 0
     for doc in docs:
@@ -72,6 +96,6 @@ def assess(classifier, docs):
         #if i % 100 == 0:
         #    print("Processing 5-class: ", i)
         i = i + 1
-
+    print_totals(sentiments)
     return globalutils.Sentiments("emotion1", f"Emotion1 ({model_name})", model_name, "emotion", sentiments)
 

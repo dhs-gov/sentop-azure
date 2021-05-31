@@ -3,6 +3,7 @@ from collections import Counter
 from adaptnlp import EasySequenceClassifier
 from topic_modeling import topmod_bertopic
 from topic_modeling import lda_tomotopy
+from topic_modeling import top2vec
 from sentiment_analysis import class3 
 from sentiment_analysis import class5 
 from sentiment_analysis import emotion1 
@@ -61,25 +62,21 @@ def get_sentiments(data_list, sentlog):
     classifier = EasySequenceClassifier()
     sentiment_results = []
 
+
     class3_results = class3.assess(classifier, data_list)
     sentiment_results.append(class3_results)
-    sentlog.append(f"Done")
 
     class5_results = class5.assess(classifier, data_list)
     sentiment_results.append(class5_results)
-    sentlog.append(f"Done")
 
     emotion_results = emotion1.assess(classifier, data_list)
     sentiment_results.append(emotion_results)
-    sentlog.append(f"Done")
 
     offensive_results = offensive1.assess(classifier, data_list)
     sentiment_results.append(offensive_results)
-    sentlog.append(f"Done")
 
     emotion2_results = emotion2.assess(classifier, data_list)
     sentiment_results.append(emotion2_results)
-    sentlog.append(f"Done")
 
     return sentiment_results
 
@@ -102,14 +99,15 @@ def main(name: object) -> json:
 
     start = time.time()
     sentlog = globalutils.SentopLog()
-    sentlog.append("*** If this line appears more than once, then Azure Function replay has occurred! ***\n")
-    sentlog.append("----------------------------------------------------------")
+    sentlog.append("<br><hr>")
+    sentlog.append("<div style=\"text-align: center; color: #e97e16; \">*** If this line appears more than once, then Azure Function replay has occurred! ***</div>\n")
+    sentlog.append("<hr>")
 
     json_obj = name
     data_in_obj = jsonpickle.decode(json_obj)
     kms_id = data_in_obj.kms_id
     sentop_id = data_in_obj.sentop_id
-    sentlog.append(f"Starting analysis for SENTOP ID: {sentop_id}")
+    #sentlog.append(f"Starting analysis for SENTOP ID: {sentop_id}")
     data_list = data_in_obj.data_list
     #sentlog.append("data_list in activity: ", data_list)
     all_stop_words = data_in_obj.all_stop_words
@@ -117,9 +115,10 @@ def main(name: object) -> json:
     row_id_list = data_in_obj.row_id_list
     #sentlog.append("row_id_list words in activity: ", row_id_list)
     annotation = data_in_obj.annotation
-    sentlog.append(f"Annotation found : {annotation}")
+    #sentlog.append(f"Annotation found : {annotation}")
 
     # ---------------------------- GET SENTIMENTS ------------------------------
+    sentlog.append("<h1>Sentiment Analyses</h1>")
 
     # Perform sentiment analyses
     sentiment_results = get_sentiments(data_list, sentlog)
@@ -127,60 +126,84 @@ def main(name: object) -> json:
     #for r in sentiment_results:
     #    print(f"Got id: {r.id}")
     #    print(f"GOt list: {r.data_list}")
-    
-    # ----------------------------- GET BERTopic -------------------------------
 
-    # Perform BERTopic
-    bert_sentence_topics, bert_topics, bert_duplicate_words, bert_error = topmod_bertopic.get_topics(
-        data_list, all_stop_words)
+    # ------------------------------ GET Top2Vec -------------------------------
+    sentlog.append("<hr>")
+    sentlog.append("<h1>Topic Modeling</h1>\n")
 
-    if bert_error:
-        sentlog.append(f"ERROR! {bert_error}.\n")
-    elif bert_topics:
-        #sentlog.append("Num bert topics: ", len(bert_topics))
-        #sentlog.append(f"BERTopic topics {bert_topics}.\n")
+    # Perform Top2Vec
+    sentlog.append("<h2>Top2Vec</h2>\n")
+    sentlog.append("<b>&#8226; URL: </b><a href=\"https://github.com/ddangelov/Top2Vec\">https://github.com/ddangelov/Top2Vec</a><br>")
+    top2vec_results, t2v_error = top2vec.get_topics(data_list, all_stop_words)
+    if t2v_error:
+        sentlog.append(f"ERROR! {top2vec_results}.\n")
+    elif top2vec_results.topics_list:
+        #sentlog.append("Num top2vec topics: ", len(bert_topics))
+        #sentlog.append(f"Top2vec topics {top2vec_results}.\n")
         db = postgres.Database()
-        db.create_bertopic_table(sentop_id, bert_topics)
-        db.create_bertopic_nooverlap_table(sentop_id, bert_topics, bert_duplicate_words)
+        db.create_top2vec_table(sentop_id, top2vec_results.topics_list)
+        db.create_top2vec_nooverlap_table(sentop_id, top2vec_results.topics_list, top2vec_results.duplicate_words_across_topics)
     else:
         sentlog.append(f"ERROR! No BERTopic topics could be generated.\n")
 
     # -------------------------------- GET LDA ---------------------------------
 
+    sentlog.append("<h2>Tomotopy (LDA)</h2>\n")
+    sentlog.append("SENTOP assesses Tomotopy coherence scores for topic sizes <i>k</i>=2..10. The topic size <k> with the highest coherence score is selected as the final LDA topic size.<br><br>")
+    sentlog.append("<b>&#8226; URL: </b><a href=\"https:/https://github.com/bab2min/tomotopy\">https://github.com/bab2min/tomotopy</a><br>")
+
     # Perform LDA
-    lda_sentence_topics, lda_topics, lda_duplicate_words, lda_error = lda_tomotopy.get_topics(
+    lda_results, lda_error = lda_tomotopy.get_topics(
         data_list, all_stop_words)
 
     if lda_error:
         sentlog.append(f"ERROR! {lda_error}.\n")
-    elif lda_topics:
+    elif lda_results.topics_list:
         #sentlog.append(f"LDA topics {lda_topics}.\n")
         db = postgres.Database()
-        db.create_lda_table(sentop_id, lda_topics)
-        db.create_lda_nooverlap_table(sentop_id, lda_topics, lda_duplicate_words)
+        db.create_lda_table(sentop_id, lda_results.topics_list)
+        db.create_lda_nooverlap_table(sentop_id, lda_results.topics_list, lda_results.duplicate_words_across_topics)
 
-        if not lda_error:
-            sentlog.append(f"LDA Topic Distribution: {Counter(lda_sentence_topics)}.\n")
+        #if not lda_error:
+        #    sentlog.append(f"LDA Topic Distribution: {Counter(lda_sentence_topics)}.\n")
     else:
-        sentlog.append("WARNING: No LDA topics could be generated.")
+        sentlog.append("<div style=\"color: #e97e16; font-weight: bold; \">&#8226; Warning: LDA topics could not be generated.</div>")
 
-    #sentlog.append("class3-rows: ", len(class3_sentiment_rows))
-    #sentlog.append("class5-rows: ", len(star5_sentiment_rows))
+
+    # ----------------------------- GET BERTopic -------------------------------
+
+    sentlog.append("<h2 style=\"font-size: 20px; font-weight: bold; color: #blue;\">BERTopic</h2>\n")
+    sentlog.append("SENTOP assesses BERTopic topics using multiple NLP sentence embedding models. The final topics are selected based on the model that produces (1) the highest number of topics, (2) the lowest topic word overlap, and (3) a number of outliers less than 2% of the total number of documents.<br><br>")
+    sentlog.append("<b>&#8226; URL: </b><a href=\"https://github.com/MaartenGr/BERTopic\">https://github.com/MaartenGr/BERTopic</a><br>")
+
+    # Perform BERTopic
+    bertopic_results, bert_error = topmod_bertopic.get_topics(data_list, all_stop_words)
+
+    if bert_error:
+        sentlog.append(f"ERROR! {bert_error}.\n")
+    elif bertopic_results.topics_list:
+        #sentlog.append("Num bert topics: ", len(bert_topics))
+        #sentlog.append(f"BERTopic topics {bert_topics}.\n")
+        db = postgres.Database()
+        db.create_bertopic_table(sentop_id, bertopic_results.topics_list)
+        db.create_bertopic_nooverlap_table(sentop_id, bertopic_results.topics_list, bertopic_results.duplicate_words_across_topics)
+    else:
+        sentlog.append(f"ERROR! No BERTopic topics could be generated.\n")
+
 
     # ----------------------------- RESULTS TO DB ------------------------------
-
+    sentlog.append("<h2>Status</h2>\n")
     # Write to database
     db = postgres.Database()
-    db.create_result_table(sentop_id, row_id_list, data_list, sentiment_results, bert_sentence_topics, bert_topics, lda_sentence_topics, lda_topics)
+    db.create_result_table(sentop_id, row_id_list, data_list, sentiment_results, top2vec_results, bertopic_results, lda_results)
     
-    sentlog.append("----------------------------------------------------------")
-    sentlog.append(f"Created PostgreSQL tables for SENTOP ID: {sentop_id}")
+    sentlog.append(f"<b>&#8226; PostgreSQL tables:</b> Completed<br>")
 
     # ---------------------------- RESULTS TO XLSX -----------------------------
 
-    globalutils.generate_excel(sentop_id, annotation, row_id_list, data_list, bert_sentence_topics, lda_sentence_topics, sentiment_results, bert_topics, lda_topics, bert_duplicate_words, lda_duplicate_words)
+    globalutils.generate_excel(sentop_id, annotation, row_id_list, data_list, sentiment_results, top2vec_results, bertopic_results, lda_results)
 
-    sentlog.append(f"Generated Excel files for SENTOP ID: {sentop_id}")
+    sentlog.append(f"<b>&#8226; Excel XLSX files:</b> Completed<br>")
 
     # -------------------------------- FINISH ----------------------------------
 
@@ -188,13 +211,12 @@ def main(name: object) -> json:
 
     json_out = jsonpickle.encode(result, unpicklable=False)
     #sentlog.append("JSON STR OUT: ", json_out)
-    sentlog.append(f"Completed processing: {kms_id} (SENTOP ID: {sentop_id}).")
+    sentlog.append(f"<b>&#8226; Completed processing: </b>{kms_id} (SENTOP ID: {sentop_id})<br>")
     end = time.time() 
 
     hours, rem = divmod(end-start, 3600)
     minutes, seconds = divmod(rem, 60)
-    sentlog.append("Elapsed {:0>2}h {:0>2}m {:05.1f}s".format(int(hours),int(minutes),seconds))
-    sentlog.append(f"DONE")
+    sentlog.append("<b>&#8226; Elapsed: </b> {:0>2}h {:0>2}m {:0>2}s".format(int(hours),int(minutes),seconds))
 
     if json_out:
         print("<<<<<<<<<<<<<<<<<<< E N D <<<<<<<<<<<<<<<<<<<")

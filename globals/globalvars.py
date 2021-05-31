@@ -1,9 +1,13 @@
-# --------------------------- DATA PREPROCESSING ---------------------------
+# ----------------------------------- SENTOP -----------------------------------
+SENTOP_VERSION=0.1
+
+
+# ------------------------------ DATA PREPROCESSING ----------------------------
 
 # Min number of words per document.
 MIN_DOC_WORDS=2
 
-# --------------------------- TOPIC MODELING ---------------------------
+# --------------------------------- TOPIC MODELING -----------------------------
 
 # Max tokens for text is LESS than 512 for Torch
 MAX_TOKENS=400

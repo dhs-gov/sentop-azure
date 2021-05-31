@@ -47,11 +47,26 @@ def get_sentiment(classifier, text):
     for confidence_score in confidence_scores:
         return calc_sentiment(confidence_score)
 
+def print_totals(sentiments):
+    sentlog = globalutils.SentopLog()
+    notoffensive = 0
+    offensive = 0
+    for sentiment in sentiments:
+        if sentiment == 'not_offensive':
+            notoffensive = notoffensive + 1
+        elif sentiment == 'offensive':
+            offensive = offensive + 1
+
+    sentlog.append(f"<pre>")
+    sentlog.append(f"- Not Offensive: {notoffensive}")
+    sentlog.append(f"- Offesnive: {offensive}")
+    sentlog.append(f"</pre>")
+
 
 def assess(classifier, docs):
     sentlog = globalutils.SentopLog()
-    sentlog.append("----------------------------------------------------------")
-    sentlog.append(f"Assessing offensive ({model_name}). Please wait...")
+    sentlog.append(f"<h2>Offensive</h2>\n")
+    sentlog.append(f"<b>Model: </b> <a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a><br>")
     sentiments = []
     i = 0
     for doc in docs:
@@ -66,6 +81,6 @@ def assess(classifier, docs):
         #if i % 100 == 0:
         #    print("Processing 5-class: ", i)
         i = i + 1
-
+    print_totals(sentiments)
     return globalutils.Sentiments("offensive1", f"Offensive ({model_name})", model_name, "offensive", sentiments)
 

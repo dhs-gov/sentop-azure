@@ -6,12 +6,13 @@ import numpy as np
 from nltk.tokenize import word_tokenize
 from . import config_topic_mod as config     
 
+'''
 class Topic:
     def __init__(self, topic_num, words, weights):
         self.topic_num = topic_num
         self.words = words
         self.weights = weights
-
+'''
 
 def check_best_overlapping_words_across_topics(topic_model, topics_no_duplicates):
     best_overlapping_words = []
@@ -34,9 +35,8 @@ def check_best_overlapping_words_across_topics(topic_model, topics_no_duplicates
     return best_overlapping_words
 
 
-def get_topics_words_list(topic_per_row, topic_model):
+def get_topics_words_list(topic_per_row, topic_model, print_topics):
     sentlog = globalutils.SentopLog()
-    sentlog.append(" ")
     topics_no_duplicates = []
     for t in topic_per_row:
         if t not in topics_no_duplicates:
@@ -47,8 +47,11 @@ def get_topics_words_list(topic_per_row, topic_model):
    
     topics_list = []
     print(f"Num topics: {len(topics_no_duplicates)}")
+    if print_topics:
+        sentlog.append(f"<pre>")
     for n in topics_no_duplicates:
-        sentlog.append(f"BERTopic topic: {n}")
+        if print_topics:
+            sentlog.append(f"Topic: {n}")
         words_list = []
         weights_list = []
 
@@ -56,28 +59,29 @@ def get_topics_words_list(topic_per_row, topic_model):
         for word in words:
             words_list.append(word[0])
             weights_list.append(str(word[1]))
-            sentlog.append("- " + word[0] + ", " + str(word[1]))
+            if print_topics:
+                sentlog.append("- " + word[0] + ", " + str(word[1]))
 
-        topic = Topic(n, words_list, weights_list)
+        topic = config.Topic(n, words_list, weights_list)
         topics_list.append(topic)
 
     # Show most frequent topics
     #sentlog.append("Topic Distribution:")
-    sentlog.append(f"\n{topic_model.get_topic_freq()}") # .head()
-
+    if print_topics:
+        sentlog.append(f"\n{topic_model.get_topic_freq()}") # .head()
+        sentlog.append(f"</pre>")
     return topics_list
 
 
 def get_topic_overlap_words(topic_per_row, topic_model):
     sentlog = globalutils.SentopLog()
-    sentlog.append(" ")
     topics_no_duplicates = []
     for t in topic_per_row:
         if t not in topics_no_duplicates:
             topics_no_duplicates.append(t)
 
     best_overlapping_words_across_topics = check_best_overlapping_words_across_topics(topic_model, topics_no_duplicates)
-    sentlog.append(f"BERTopic topic overlap: {len(best_overlapping_words_across_topics)} words: {best_overlapping_words_across_topics}")
+    #sentlog.append(f"BERTopic topic overlap: {len(best_overlapping_words_across_topics)} words: {best_overlapping_words_across_topics}")
     return best_overlapping_words_across_topics
 
 
@@ -116,10 +120,11 @@ def get_best_model_name(rows, all_stop_words):
         'T-Systems-onsite/cross-en-de-roberta-sentence-transformer']
 
     # Selects the first model that satisfies the requirements.
-    for model_name in embedding_models:
-        sentlog.append(f"\n* * * * * * * * * * * * * * * * * * * * * * * * * * *")
-        sentlog.append(f"Analyzing model: {model_name}")
 
+    sentlog.append(f"<b>&#8226; Assessments:</b>")
+    sentlog.append(f"<pre>")
+
+    for model_name in embedding_models:
         # Prepare custom models
         #hdbscan_model = HDBSCAN(min_cluster_size=40, metric='euclidean', cluster_selection_method='eom', prediction_data=True)
         #umap_model = UMAP(n_neighbors=15, n_components=10, min_dist=0.0, metric='cosine')
@@ -140,7 +145,7 @@ def get_best_model_name(rows, all_stop_words):
             #print("PROBS: %s", probs)
             if not topic_per_row:
                 # Topics could not be generated
-                sentlog.append(f"Could not generate topics using {model_name}.")
+                sentlog.append(f"<div style=\"font-weight: bold; color: #e97e16; \">&#8226; WARNING! Could not generate topics using model {model_name}.</div><br>")
                 continue
         except ValueError:  #raised if `y` is empty.
             print("Warning: topics has size 0, probably not enough data.")
@@ -150,43 +155,45 @@ def get_best_model_name(rows, all_stop_words):
         unique_topics = np.unique(topic_per_row)
         num_unique_topics = len(unique_topics)
         
-        outlier_num = 0.00000
+        outlier_num = 0
         outlier_perc = 0.00000
+        num_overlapping_words = 0
 
         #print("Checking for outlier topic")
         outlier_topic = topic_model.get_topic(-1)
         if outlier_topic:
             num_unique_topics = num_unique_topics - 1  # Don't count outlier as a topic
             outlier_num = int(topic_model.get_topic_freq(-1))
-            sentlog.append(f"Num outliers: {outlier_num}")
+            #sentlog.append(f"Num outliers: {outlier_num}")
             outlier_perc = outlier_num / len(rows)
-            sentlog.append(f"Max percent outliers permitted: {config.MAX_OUTLIERS_PERCENT} ({config.MAX_OUTLIERS_PERCENT * len(rows)} of {len(rows)} docs).")
-            sentlog.append(f"Outlier percent: {outlier_perc}.")
-        else:
-            sentlog.append("No outliers found.")
+            #sentlog.append(f"Max percent outliers permitted: {config.MAX_OUTLIERS_PERCENT} ({config.MAX_OUTLIERS_PERCENT * len(rows)} of {len(rows)} docs).")
+            #sentlog.append(f"Outlier percent: {outlier_perc}.")
+        #else:
+        #    sentlog.append("No outliers found.")
 
         # Compare against best model and replace if better.
         if outlier_perc < best_outlier_perc:
-            sentlog.append("Trace outlier_perc <= best_outlier_perc")
-
+            #sentlog.append("Trace outlier_perc <= best_outlier_perc")
             best_model_name = model_name
             best_num_topics = num_unique_topics
             best_num_outliers = outlier_num
             best_outlier_perc = outlier_perc
             best_overlapping_words = get_topic_overlap_words(topic_per_row, topic_model)
+            num_overlapping_words = len(best_overlapping_words)
             best_num_overlapping_words = len(best_overlapping_words)
             best_topic_model = topic_model
             best_topic_per_row = topic_per_row
-            best_topics_list = get_topics_words_list(topic_per_row, topic_model)
-            sentlog.append(f"\nSetting as best model so far: {best_model_name},\n - num topics: {best_num_topics},\n - num outliers: {best_num_outliers},\n - perc outliers: {best_outlier_perc},\n - num word overlap: {best_num_overlapping_words}")
+            best_topics_list = get_topics_words_list(topic_per_row, topic_model, False)
+            #sentlog.append(f"Setting as best model so far: {best_model_name},\n - num topics: {best_num_topics},\n - num outliers: {best_num_outliers},\n - perc outliers: {best_outlier_perc},\n - num word overlap: {best_num_overlapping_words}")
 
         elif outlier_perc == best_outlier_perc:
-            sentlog.append("Trace outlier_perc == best_outlier_perc")
+            #sentlog.append("Trace outlier_perc == best_outlier_perc")
 
             overlapping_words = get_topic_overlap_words(topic_per_row, topic_model)
-            
+            num_overlapping_words = len(overlapping_words)
+
             if len(overlapping_words) < best_num_overlapping_words:
-                sentlog.append("Trace len(overlapping_words) < best_num_overlapping_words")
+                #sentlog.append("Trace len(overlapping_words) < best_num_overlapping_words")
 
                 best_model_name = model_name
                 best_num_topics = num_unique_topics
@@ -196,13 +203,13 @@ def get_best_model_name(rows, all_stop_words):
                 best_num_overlapping_words = len(best_overlapping_words)
                 best_topic_model = topic_model
                 best_topic_per_row = topic_per_row
-                best_topics_list = get_topics_words_list(topic_per_row, topic_model)
-                sentlog.append(f"\nSetting as best model so far: {best_model_name},\n - num topics: {best_num_topics},\n - num outliers: {best_num_outliers},\n - perc outliers: {best_outlier_perc},\n - num word overlap: {best_num_overlapping_words}")
+                best_topics_list = get_topics_words_list(topic_per_row, topic_model, False)
+                #sentlog.append(f"Setting as best model so far: {best_model_name},\n - num topics: {best_num_topics},\n - num outliers: {best_num_outliers},\n - perc outliers: {best_outlier_perc},\n - num word overlap: {best_num_overlapping_words}")
             
             elif len(overlapping_words) == best_num_overlapping_words:
-                sentlog.append("Trace len(overlapping_words) == best_num_overlapping_words")
+                #sentlog.append("Trace len(overlapping_words) == best_num_overlapping_words")
                 if num_unique_topics > best_num_topics:
-                    sentlog.append("Trace num_unique_topics > best_num_topics")
+                    #sentlog.append("Trace num_unique_topics > best_num_topics")
 
                     best_model_name = model_name
                     best_num_topics = num_unique_topics
@@ -212,15 +219,19 @@ def get_best_model_name(rows, all_stop_words):
                     best_num_overlapping_words = len(best_overlapping_words)
                     best_topic_model = topic_model
                     best_topic_per_row = topic_per_row
-                    best_topics_list = get_topics_words_list(topic_per_row, topic_model)
-                    sentlog.append(f"\nSetting as best model so far: {best_model_name},\n - num topics: {best_num_topics},\n - num outliers: {best_num_outliers},\n - perc outliers: {best_outlier_perc},\n - num word overlap: {best_num_overlapping_words}")
+                    best_topics_list = get_topics_words_list(topic_per_row, topic_model, False)
+                    #sentlog.append(f"Setting as best model so far: {best_model_name},\n - num topics: {best_num_topics},\n - num outliers: {best_num_outliers},\n - perc outliers: {best_outlier_perc},\n - num word overlap: {best_num_overlapping_words}")
 
-                else:
-                    sentlog.append(f"Num topics ({num_unique_topics}) <= best num topics ({best_num_topics}). Ignoring model.")
-            else:
-                sentlog.append(f"Num duplicate words ({len(overlapping_words)}) > top num duplicate words ({best_num_overlapping_words}). Ignoring model.")
-        else:
-            sentlog.append(f"Outlier perc ({outlier_perc}) is > than best outlier perc ({best_outlier_perc}). Ignoring model.")
+                #else:
+                #    sentlog.append(f"Num topics ({num_unique_topics}) <= best num topics ({best_num_topics}). Ignoring model.")
+            #else:
+            #    sentlog.append(f"Num duplicate words ({len(overlapping_words)}) > top num duplicate words ({best_num_overlapping_words}). Ignoring model.")
+        #else:
+        #    sentlog.append(f"Outlier perc ({outlier_perc}) is > than best outlier perc ({best_outlier_perc}). Ignoring model.")
+                
+        sentlog.append(f"- Model: {model_name}, Outliers: {outlier_num}, Topics: {num_unique_topics}, Overlap: {num_overlapping_words}")
+
+    sentlog.append("</pre>")
 
     if not best_model_name:
         return None, None, None, None, None, "No final topic model was determined."
@@ -229,8 +240,21 @@ def get_best_model_name(rows, all_stop_words):
     elif not best_topic_per_row:
         return None, None, None, None, None, "No final topic per row was determined."
         
-    sentlog.append(f"\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    sentlog.append(f"Final model: {best_model_name},\n - num topics: {best_num_topics},\n - num outliers: {best_num_outliers},\n - perc outliers: {best_outlier_perc},\n - num word overlap: {best_num_overlapping_words}")
+
+    sentlog.append(f"<b>&#8226; Final model: </b>{best_model_name}<br>")
+    sentlog.append("<pre>")
+    sentlog.append(f"- num topics: {best_num_topics}")
+    sentlog.append(f"- num outliers: {best_num_outliers}")
+    sentlog.append(f"- perc outliers: {best_outlier_perc}")
+    sentlog.append(f"- num word overlap: {best_num_overlapping_words}")
+    sentlog.append("</pre>")
+
+    sentlog.append(f"<b>&#8226; Final num topic word overlap:</b> {len(best_overlapping_words)}<br>")
+    sentlog.append(f"<b>&#8226; Final topic word overlap:</b>")
+    sentlog.append("<pre>")
+    for x in best_overlapping_words:
+        sentlog.append(f"- {x}")
+    sentlog.append("</pre>")
 
     return best_model_name, best_topic_model, best_topic_per_row, best_topics_list, best_overlapping_words, None
 
@@ -238,18 +262,20 @@ def get_best_model_name(rows, all_stop_words):
 def get_topics(rows, all_stop_words):
 
     sentlog = globalutils.SentopLog()
-    sentlog.append("----------------------------------------------------------")
-    sentlog.append("Assessing BERTopic")
-    sentlog.append("BERTopic tests several NLP sentence embedding models and selects the model that has the lowest number of outlier documents and lowest number of overlapping topic words.")
+    #sentlog.append("----------------------------------------------------------")
+    print("Assessing BERTopic")
+    #sentlog.append("BERTopic tests several NLP sentence embedding models and selects the model that has the lowest number of outlier documents and lowest number of overlapping topic words.")
 
     model, topic_model, topic_per_row, topics_list, best_overlapping_words, error = get_best_model_name(rows, all_stop_words)
     if error:
         return None, None, None, error
 
     print(f"Using embedding model: {model}")
-    best_topics_list = get_topics_words_list(topic_per_row, topic_model)
+    best_topics_list = get_topics_words_list(topic_per_row, topic_model, True)
 
-    return topic_per_row, topics_list, best_overlapping_words, None
+    topic_model_results = config.TopicModelResults(topic_per_row, topics_list, best_overlapping_words)
+
+    return topic_model_results, None
 
 
 

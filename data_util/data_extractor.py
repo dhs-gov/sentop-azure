@@ -18,22 +18,25 @@ def get_json_payload(json_obj):
     annotation = None
     try:
         user_stop_words = json_obj.get('user_stop_words')
+        '''
         if user_stop_words:
-            sentlog.append(f"Found JSON user stop words: {user_stop_words}.")
+            sentlog.append(f"Found JSON user stop words: {user_stop_words}.<br>")
         else:
-            sentlog.append("WARNING! JSON user stop words empty or undefined.")
+            sentlog.append("<div style=\"color: #e97e16; \">WARNING!</div> JSON user stop words empty or undefined.<br>")
+        '''
 
         annotation = json_obj.get('annotation')
+        '''
         if annotation:
-            sentlog.append(f"Found JSON user annotation: {annotation}.")
+            sentlog.append(f"Found JSON user annotation: {annotation}.<br>")
         else:
-            sentlog.append("WARNING! JSON user annotation empty or undefined.")      
+            sentlog.append("WARNING! JSON user annotation empty or undefined.<br>")      
+        '''
 
         docs = json_obj.get('documents')
         row_id_list = []
         data_list = []
         if docs:
-            sentlog.append(f"Found JSON documents.")
             for doc in docs:
                 row_id = doc.get('id')
                 row_id_list.append(row_id)
@@ -41,8 +44,8 @@ def get_json_payload(json_obj):
                 if not text:
                     text = "NA"
                 data_list.append(text)
-        else:
-            sentlog.append(f"WARNING! No JSON documents found.")
+        #else:
+        #    sentlog.append(f"WARNING! No JSON documents found.<br>")
         return row_id_list, data_list, user_stop_words, annotation, None
     except Exception as e:    
         globalutils.show_stack_trace(str(e))
@@ -79,19 +82,23 @@ def get_xlsx_data(bytes):
     try:
         xlsx = io.BytesIO(bytes)
         wb = load_workbook(xlsx)
-        sentlog.append(f"Using first worksheet of: {wb.sheetnames}")
+        sentlog.append(f"<b>&#8226; Worksheets:</b><br>")
+        sentlog.append("<pre>")
+        for x in wb.sheetnames:
+            sentlog.append(f"- {x}")
+        sentlog.append("</pre>")
         ws = wb.worksheets[0]  
 
         # ------------------------ FIND DATA ID COLUMN -------------------------
 
         # NOTE: Selected data column header cell MUST NOT BE BLANK!
         
-        sentlog.append(f"----------------------------------------------------------")
+        #sentlog.append(f"----------------------------------------------------------")
         id_column = None
         row = ws[1]
         col_num = 0
         # Data ID column, if it exists, MUST have RED background color red (#FF0000) in FIRST HEADER ROW.
-        sentlog.append("Searching for data ID column (denoted by cell color #FF0000).")
+        #sentlog.append("Searching for data ID column (denoted by cell color #FF0000).")
         id_column = None
         for col_cell in row:
             col_num = col_num + 1
@@ -106,20 +113,20 @@ def get_xlsx_data(bytes):
                 #sentlog.append(f"color_in_hex: {color_in_hex}")
                 if len(color_in_hex) == 6:
                     if color_in_hex == 'FF0000':
-                        sentlog.append(f"Found cell color 'FF0000' {cell_address}")
+                        sentlog.append(f"<b>&#8226; Found cell color:</b> 'FF0000' at cell {cell_address}<br>")
                         id_column = col_letter
                         break
 
         if not id_column:
-            sentlog.append("Could not find header data ID cell in HEADER ROW 1 with color #FF0000 in XLSX file. Will use row num instead.")
+            sentlog.append("<div style=\"color: #e97e16; font-weight: bold; \">&#8226; Warning:  1 with color #FF0000 in XLSX file. Will use row number as ID.</div>")
         else:
-            sentlog.append(f"Found data ID column {id_column}")
+            sentlog.append(f"<b>&#8226; Found data ID column:</b> {id_column}<br>")
 
         # --------------------- GET HIGHLIGHTED DATA CELLS ---------------------
         
         # NOTE: Cell color will be '000000' if cell has no data, regardless of color.
         
-        sentlog.append(f"----------------------------------------------------------")
+        #sentlog.append(f"----------------------------------------------------------")
         row_num = 0
         data_list = []
         data_id = None
@@ -180,9 +187,13 @@ def get_xlsx_data(bytes):
             stop_words_ws = wb.get_sheet_by_name('SENTOP Stop Words')
             if stop_words_ws:
                 user_stop_words = get_col_values(stop_words_ws)
-                sentlog.append(f"Found user stop words: {user_stop_words}")
+                sentlog.append(f"<b>&#8226; User stop words:</b><br>")
+                sentlog.append("<pre>")
+                for x in user_stop_words:
+                    sentlog.append(f"- {x}")
+                sentlog.append("</pre>")
             else:
-                sentlog.append(f"No user stop words found.")
+                #sentlog.append(f"No user stop words found.")
                 user_stop_words = []
 
         # --------------------- GET ANNOTATION ---------------------
@@ -190,7 +201,7 @@ def get_xlsx_data(bytes):
             annotation_ws = wb.get_sheet_by_name('SENTOP Annotation')
             if annotation_ws:
                 annotation = get_col_values_as_str(annotation_ws)
-                sentlog.append(f"Found user annotation: {annotation}")
+                #sentlog.append(f"Found user annotation: {annotation}")
             else:
                 sentlog.append(f"No user annotation found.")
                 annotation = None
@@ -216,12 +227,11 @@ def get_xlsx_data(bytes):
 # Return data[], user_stop_words[], error
 def get_data(req, sentop_id, kms_id):
     sentlog = globalutils.SentopLog()
-    sentlog.append("----------------------------------------------------------")
 
     try:
         # -------------------------- GET JSON DATA -----------------------------
         # Check JSON payload even if kms_id since user_stop_words may exists.
-        sentlog.append("Checking for JSON data.")
+        #sentlog.append("Checking for JSON data.")
         body_bytes = req.get_body()
         row_id_list = []
         user_stop_words = []
@@ -249,31 +259,35 @@ def get_data(req, sentop_id, kms_id):
             print("No JSON body found in request")
 
         if data_list:
+            sentlog.append("<b>&#8226; Data type:</b> JSON<br>")
             return row_id_list, data_list, user_stop_words, annotation, error
         elif not kms_id:
             return None, None,  None, None, "No JSON or file URL received."
 
         # ------------------------ GET FILE DATA ---------------------------
 
-        sentlog.append(f"No JSON documents found.")
-        sentlog.append(f"Checking for file: {kms_id}.") 
+        sentlog.append("<div style=\"color: #e97e16; font-weight: bold; \">&#8226; Warning: No JSON payload found.</div>")
+        sentlog.append(f"<b>&#8226; File URL:</b> {kms_id}.<br>") 
         http = urllib3.PoolManager()
         # NOTE: Use http://, not file://, scheme -- The file must be
         # located where the HTTP server is started. Note that the
         # response data will always be binary.
         resp = http.request('GET', kms_id)
-        sentlog.append(f"Received HTTP response from file server: {resp.status}")
+
         error = None
         if resp.status == 200:
-            #print("Response data: ", resp.data)
+            sentlog.append(f"<b>&#8226; File found:</b> True<br>")
             try:
 
                 # --------------------- GET XLSX DATA ----------------------
 
                 if kms_id.endswith('.xlsx'):
-                    sentlog.append("Found XLSX file.")
+                    #sentlog.append("<b>&#8226; File type:</b> XLSX<br>")
                     try:
                         row_id_list, data_list, user_stop_words, annotation, error = get_xlsx_data(resp.data)
+                        if data_list:
+                            sentlog.append("<b>&#8226; Data type:</b> XLSX<br>")
+
                         if error:
                             return None, None, None, None, error
                     except Exception as e:
@@ -285,7 +299,7 @@ def get_data(req, sentop_id, kms_id):
                     return None, None, None, None, "File extension not supported."
 
                 if data_list:
-                    sentlog.append("Extracted XLSX data.")
+                    #sentlog.append("Extracted XLSX data.<br>")
                     return row_id_list, data_list, user_stop_words, annotation, None
                 else:
                     return None, None, None, None, "Could not extract XLSX data."
@@ -294,8 +308,7 @@ def get_data(req, sentop_id, kms_id):
                 globalutils.show_stack_trace(str(e))
                 return None, None, None, None, str(e)
         else:
-            print("Received non-200 code: " + str(resp.status) + str(resp.data))
-            return None, None,  None, None, "Received non-200 code: " + str(resp.status) + str(resp.data)
+            return None, None,  None, None, "ERROR: Could not find file."
 
     except Exception as e:    
         globalutils.show_stack_trace(str(e))

@@ -5,6 +5,7 @@ neutral
 positive
 '''
 
+from numpy import negative
 from globals import globalutils
 
 
@@ -51,11 +52,29 @@ def get_sentiment(classifier, text):
     for confidence_score in confidence_scores:
         return calc_sentiment(confidence_score)
 
+def print_totals(sentiments):
+    sentlog = globalutils.SentopLog()
+    negative_num = 0
+    neutral_num = 0
+    positive_num = 0
+    for sentiment in sentiments:
+        if sentiment == 'negative':
+            negative_num = negative_num + 1
+        elif sentiment == 'neutral':
+            neutral_num = neutral_num + 1
+        else:
+            positive_num = positive_num + 1
+
+    sentlog.append(f"<pre>")
+    sentlog.append(f"- Negative: {negative_num}")
+    sentlog.append(f"- Neutral: {neutral_num}")
+    sentlog.append(f"- Positive: {positive_num}")
+    sentlog.append(f"</pre>")
 
 def assess(classifier, docs):
     sentlog = globalutils.SentopLog()
-    sentlog.append("----------------------------------------------------------")
-    sentlog.append(f"Assessing 3-class ({model_name}). Please wait...")
+    sentlog.append(f"<h2>3-Class Polarity</h2>")
+    sentlog.append(f"<b>Model:</b> <a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a><br>")
     sentiments = []
     i = 0
     for doc in docs:
@@ -70,5 +89,5 @@ def assess(classifier, docs):
         #if i % 100 == 0:
         #    print("Processing 3-class: ", i)
         i = i + 1
-
+    print_totals(sentiments)
     return globalutils.Sentiments("class3", f"3-Class ({model_name})", model_name, "polarity", sentiments)

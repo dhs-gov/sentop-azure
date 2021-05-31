@@ -75,24 +75,45 @@ class TextChecker():
             text = text[0:globalvars.MAX_TOKENS]
         return text
 
+html_start = """<html>\n 
+             <head>
+             <style>
+                body {line-height: 140%;}
+                h1 {font-size: 22px; font-weight: bold; color: #235668;}
+                h2 {font-size: 20px; font-weight: bold; color: #5498b0;}
+                h3 {font-size: 16px; font-weight: bold; color: brown;}
+                pre {font-size: 14px;}
+                p    {color: red;}
+                b {color: #525252;}
+                hr {color: silver}
+</style>
+             
+             </head>\n
+             <body style=\"font-family: arial; \">\n
+             """
+html_end = """</body>\n
+             </html>
+             """
 
 class SentopLog():
     def __init__(self):
-        self.id = ""
+        self.id = html_start
 
     def append(self, text):
         globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + text + "\n"
         print(text)
 
     def clear(self):
-        globalvars.SENTOP_LOG = ""
+        globalvars.SENTOP_LOG = html_start
 
     def write(self, id, output_dir_path):
-        log_out = output_dir_path + "\\" + id + "_log.txt"
+        globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html_end + "\n"
+        log_out = output_dir_path + "\\" + id + "_log.html"
         f= open(log_out,"w+")
         f.write(globalvars.SENTOP_LOG)
         f.close
 
+    
 
 
 def show_stack_trace(error_msg):
@@ -161,8 +182,22 @@ def get_sentiment(id, sentiments):
             return r
 
 
-def generate_excel(id, annotation, num_list, data_list, bert_sentence_topics, lda_sentence_topics, sentiment_results, bert_topics, lda_topics, bert_duplicate_words, lda_duplicate_words):
+def generate_excel(id, annotation, num_list, data_list, sentiment_results, top2vec_results, bertopic_results, lda_results):
    
+    top2vec_sentence_topics = top2vec_results.topic_per_row
+    top2vec_topics = top2vec_results.topics_list
+    top2vec_duplicate_words = top2vec_results.duplicate_words_across_topics
+
+    bert_sentence_topics = bertopic_results.topic_per_row
+    bert_topics = bertopic_results.topics_list
+    bert_duplicate_words = bertopic_results.duplicate_words_across_topics
+
+    lda_sentence_topics = lda_results.topic_per_row
+    lda_topics = lda_results.topics_list
+    lda_duplicate_words = lda_results.duplicate_words_across_topics
+
+
+
     # NOTE: data is a list of [id, text]
     #num_list = column(data, 0)
     #data_list = column(data, 1)
@@ -170,9 +205,9 @@ def generate_excel(id, annotation, num_list, data_list, bert_sentence_topics, ld
     #input_dir_path = config.data_dir_path.get("input")
     output_dir_path = config.data_dir_path.get("output")
 
-    for r in sentiment_results:
-        print(f"Got Exel id: {r.id}")
-        print(f"GOt Excel list: {r.data_list}")
+    #for r in sentiment_results:
+    #    print(f"Got Exel id: {r.id}")
+    #    print(f"GOt Excel list: {r.data_list}")
 
     class3 = get_sentiment('class3', sentiment_results)
     print(f"class3 type: {type(class3)}")
@@ -190,6 +225,7 @@ def generate_excel(id, annotation, num_list, data_list, bert_sentence_topics, ld
             row_data.append(data_list[i])
             row_data.append(bert_sentence_topics[i])
             row_data.append(lda_sentence_topics[i])
+            row_data.append(top2vec_sentence_topics[i])
             row_data.append(class3.data_list[i])
             row_data.append(class5.data_list[i])
             row_data.append(emotion1.data_list[i])
@@ -203,7 +239,7 @@ def generate_excel(id, annotation, num_list, data_list, bert_sentence_topics, ld
     xlsx_out = output_dir_path + "\\" + id + "_results.xlsx"
     ws1 = wb.active
     ws1.title = "Results"
-    ws1.append(['ID', 'Text', 'BERTopic Topic', 'LDA Topic', class3.name, class5.name, emotion1.name, emotion2.name, offensive1.name])
+    ws1.append(['ID', 'Text', 'BERTopic Topic', 'LDA Topic', 'Top2Vec', class3.name, class5.name, emotion1.name, emotion2.name, offensive1.name])
     ws1['A1'].font = Font(bold=True)
     ws1['B1'].font = Font(bold=True)
     # Topic columns
@@ -211,19 +247,22 @@ def generate_excel(id, annotation, num_list, data_list, bert_sentence_topics, ld
     ws1['C1'].font = Font(bold=True)
     ws1['D1'].fill = PatternFill(start_color='FF66FF66', end_color='FF66FF66', fill_type='solid')
     ws1['D1'].font = Font(bold=True)
-    # Polarity sentiment columns
-    ws1['E1'].fill = PatternFill(start_color='FF66FFFF', end_color='FF66FFFF', fill_type='solid')
+    ws1['E1'].fill = PatternFill(start_color='FF66FF66', end_color='FF66FF66', fill_type='solid')
     ws1['E1'].font = Font(bold=True)
+    # Polarity sentiment columns
+
     ws1['F1'].fill = PatternFill(start_color='FF66FFFF', end_color='FF66FFFF', fill_type='solid')
     ws1['F1'].font = Font(bold=True)
-    # Emotion sentiment columns
-    ws1['G1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
+    ws1['G1'].fill = PatternFill(start_color='FF66FFFF', end_color='FF66FFFF', fill_type='solid')
     ws1['G1'].font = Font(bold=True)
+
+    # Emotion sentiment columns
     ws1['H1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
     ws1['H1'].font = Font(bold=True)
     ws1['I1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
     ws1['I1'].font = Font(bold=True)
-    
+    ws1['J1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
+    ws1['J1'].font = Font(bold=True) 
     for i in range(len(rows)):
         ws1.append(rows[i])
 
@@ -234,6 +273,42 @@ def generate_excel(id, annotation, num_list, data_list, bert_sentence_topics, ld
     annotation_list = []
     annotation_list.append(annotation)
     ws4.append(annotation_list)
+
+    # Create Top2Vec topics data
+    rows = []
+    for i in range(len(top2vec_topics)):
+        for j in range(len(top2vec_topics[i].words)):
+            row_data = []
+            row_data.append(top2vec_topics[i].topic_num)
+            row_data.append(top2vec_topics[i].words[j])
+            row_data.append(float(top2vec_topics[i].weights[j]))
+            rows.append(row_data)
+
+
+    # Create Top2Vec topics data XLSX sheet
+    ws5 = wb.create_sheet(title="Top2Vec")
+    ws5.append(['Topic', 'Top Words', 'Weight'])
+    for i in range(len(rows)):
+        ws5.append(rows[i])
+
+
+    # Create Top2Vec non-overlapping topic words data
+    rows = []
+    for i in range(len(top2vec_topics)):
+        for j in range(len(top2vec_topics[i].words)):
+            if not top2vec_topics[i].words[j] in top2vec_duplicate_words:
+                row_data = []
+                row_data.append(top2vec_topics[i].topic_num)
+                row_data.append(top2vec_topics[i].words[j])
+                row_data.append(float(top2vec_topics[i].weights[j]))
+                rows.append(row_data)
+
+
+    # Create Top2Vec non-overlapping topics data XLSX sheet
+    ws5 = wb.create_sheet(title="Top2Vec Non-Overlapping Topics")
+    ws5.append(['Topic', 'Top Words', 'Weight'])
+    for i in range(len(rows)):
+        ws5.append(rows[i])  
 
 
     # Create BERTopic topics data
@@ -249,7 +324,7 @@ def generate_excel(id, annotation, num_list, data_list, bert_sentence_topics, ld
 
     # Create BERTopic topics data XLSX sheet
     ws2 = wb.create_sheet(title="BERTopic")
-    ws2.append(['Topic', 'Top 30', 'Weight'])
+    ws2.append(['Topic', 'Top Words', 'Weight'])
     for i in range(len(rows)):
         ws2.append(rows[i])
 
@@ -288,7 +363,7 @@ def generate_excel(id, annotation, num_list, data_list, bert_sentence_topics, ld
 
      # Create LDA topics data XLSX sheet
     ws3 = wb.create_sheet(title="LDA")
-    fields = ['Topic', 'Top 30', 'Weight']
+    fields = ['Topic', 'Top Words', 'Weight']
     ws3.append(fields)
     for i in range(len(rows)):
         ws3.append(rows[i])

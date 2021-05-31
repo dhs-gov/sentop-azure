@@ -55,11 +55,37 @@ def get_sentiment(classifier, text):
     for confidence_score in confidence_scores:
         return calc_sentiment(confidence_score)
 
+def print_totals(sentiments):
+    sentlog = globalutils.SentopLog()
+    star1 = 0
+    star2 = 0
+    star3 = 0
+    star4 = 0
+    star5 = 0
+    for sentiment in sentiments:
+        if sentiment == '1_star':
+            star1 = star1 + 1
+        elif sentiment == '2_stars':
+            star2 = star2 + 1
+        elif sentiment == '3_stars':
+            star3 = star3 + 1
+        elif sentiment == '4_stars':
+            star4 = star4 + 1
+        elif sentiment == '5_stars':
+            star5 = star5 + 1
+    sentlog.append(f"<pre>")
+    sentlog.append(f"- 1 Star: {star1}")
+    sentlog.append(f"- 2 Stars: {star2}")
+    sentlog.append(f"- 3 Stars: {star3}")
+    sentlog.append(f"- 4 Stars: {star4}")
+    sentlog.append(f"- 5 Stars: {star5}")
+    sentlog.append(f"</pre>")
+
 
 def assess(classifier, docs):
     sentlog = globalutils.SentopLog()
-    sentlog.append("----------------------------------------------------------")
-    sentlog.append(f"Assessing 5-class ({model_name}). Please wait...")
+    sentlog.append(f"<h2>5-Class Polarity</h2>\n")
+    sentlog.append(f"<b>Model: </b> <a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a><br>")
     sentiments = []
     i = 0
     for doc in docs:
@@ -74,6 +100,6 @@ def assess(classifier, docs):
         #if i % 100 == 0:
         #    print("Processing 5-class: ", i)
         i = i + 1
-
+    print_totals(sentiments)
     return globalutils.Sentiments("class5", f"5-Class ({model_name})", model_name, "polarity", sentiments)
 

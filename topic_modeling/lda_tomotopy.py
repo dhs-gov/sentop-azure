@@ -5,6 +5,7 @@ import re
 #from transformers import AutoTokenizer, AutoModelForTokenClassification, TokenClassificationPipeline
 from . import config_topic_mod as config     
 from globals import globalutils
+from data_util import data_cleaner
 
 class KeyWeight:
     def __init__(self, key, weight):
@@ -12,12 +13,13 @@ class KeyWeight:
         self.weight = weight
 
 
+'''
 class Topic:
     def __init__(self, topic_num, words, weights):
         self.topic_num = topic_num
         self.words = words
         self.weights = weights
-
+'''
 
 def get_coherence(data_preprocessed, k):
     
@@ -45,7 +47,7 @@ def get_coherence(data_preprocessed, k):
     #print("dist: ", mdl.get_topic_word_dist)
     '''
     for i in range(mdl.k):
-        #print('Top 30 words of topic #{}'.format(k))
+        #print('Top words of topic #{}'.format(k))
         print(mdl.get_topic_words(i, top_n=10))
 
     mdl.summary()
@@ -104,7 +106,7 @@ def get_topic_data(data_preprocessed, k):
     #print("dist: ", mdl.get_topic_word_dist)
     '''
     for i in range(mdl.k):
-        #print('Top 30 words of topic #{}'.format(k))
+        #print('Top words of topic #{}'.format(k))
         print(mdl.get_topic_words(i, top_n=10))
 
     mdl.summary()
@@ -126,10 +128,9 @@ def get_topic_data(data_preprocessed, k):
 
     #print("Creating topic info")
    
-
     topics_list = []
     for n in range (0, mdl.k):
-        sentlog.append(f"LDA Topic: {n}")
+        sentlog.append(f"Topic: {n}")
         words_list = []
         weights_list = []
         words = mdl.get_topic_words(n, top_n=config.NUM_WORDS_PER_TOPIC)
@@ -139,7 +140,7 @@ def get_topic_data(data_preprocessed, k):
             weights_list.append(str(word[1]))
             sentlog.append("- " + word[0] + ", " + str(word[1]))
 
-        topic = Topic(n, words_list, weights_list)
+        topic = config.Topic(n, words_list, weights_list)
         topics_list.append(topic)
 
     return topic_per_row, topics_list, None
@@ -158,6 +159,7 @@ def bert_to_wordnet_pos_tag(bert_tag):
         return None
 
 
+'''
 # LDA performs additional preprocessing by removing some words and punctuation
 # to surface only the most salient words:
 # - Removes all punctuation from a doc.
@@ -184,7 +186,7 @@ def clean_stop(data_list, stop_words):
         cleaned.append(cleaned_sentence)
 
     return cleaned
-
+'''
 
 def check_duplicate_words_across_topics(topics_list):
     duplicate_words = []
@@ -209,10 +211,10 @@ def check_duplicate_words_across_topics(topics_list):
 
 # Do not remove duplicate/overlapping terms since Venn Diagrams will be able to 
 # show which terms overlap.
-def get_topics(data_list, stop_words):
+def get_topics(data_list, all_stop_words):
     sentlog = globalutils.SentopLog()
-    sentlog.append("----------------------------------------------------------")
-    sentlog.append("Assessing LDA (Tomotopy)")
+    #sentlog.append("----------------------------------------------------------")
+    print("Assessing LDA (Tomotopy)")
 
     # ------------------------- PREPROCESS DOCS -------------------------
 
@@ -223,34 +225,53 @@ def get_topics(data_list, stop_words):
     #data_preprocessed = []
     #pat = re.compile('[a-z]{2,}$')
 
-    data_preprocessed = clean_stop(data_list, stop_words)
+    data_preprocessed = data_cleaner.topic_modeling_clean_stop(data_list, all_stop_words)
     #data_preprocessed = lemmatize(data_preprocessed, stop_words)
 
 
     # ------------------------- GET COHERENCE SCORES -------------------------
 
     # Get coherence scores for topics sizes 2-n
+    sentlog.append(f"<b>&#8226; Assessments:</b>")
+    sentlog.append(f"<pre>")
 
     highest_topic_coherence = -999999.99
     highest_coherence_topic_num = -999
-    for k in range(2, 10):
+    for k in range(2, 11):
         topic_coherence_score = get_coherence(data_preprocessed, k)
         #print("Coh score for %s is %s", k, topic_coherence_score)
+        sentlog.append(f"- k: {k}, Coherence Score: {topic_coherence_score}")
+
         if topic_coherence_score > highest_topic_coherence:
             highest_topic_coherence = topic_coherence_score
             highest_coherence_topic_num = k
 
-    sentlog.append(f"Highest coherence: {highest_topic_coherence}")
-    sentlog.append(f"Highest coherence topic size: {highest_coherence_topic_num}")
-    sentlog.append("")
+    sentlog.append(f"</pre>")
 
     # -------- GET TOPICS FOR FOR K WITH HIGHEST COHERENCE SCORE --------
 
+    sentlog.append(f"<b>&#8226; Final Topics:</b><br>")
+    sentlog.append("<pre>")
+
+    sentlog.append(f"- Num topics: {highest_coherence_topic_num}")
+    sentlog.append(f"- Coherence score: {highest_topic_coherence}")
+    sentlog.append("")
+
     topics_per_rows, topics_list, error = get_topic_data(data_preprocessed, highest_coherence_topic_num)
-    
+    sentlog.append("</pre>")
+
     duplicate_words_across_topics = check_duplicate_words_across_topics(topics_list)
-    sentlog.append(f"LDA topic overlap: {duplicate_words_across_topics}.\n")
+
+    sentlog.append(f"<b>&#8226; Final num topic word overlap:</b> {len(duplicate_words_across_topics)}<br>")
+    sentlog.append(f"<b>&#8226; Final topic word overlap:</b>")
+    sentlog.append("<pre>")
+    for x in duplicate_words_across_topics:
+        sentlog.append(f"- {x}")
+    sentlog.append("</pre>")
 
     #sentlog.append(f"Common words across topics: {duplicate_words_across_topics}.\n")
-    return topics_per_rows, topics_list, duplicate_words_across_topics, error
+
+    topic_model_results = config.TopicModelResults(topics_per_rows, topics_list, duplicate_words_across_topics)
+
+    return topic_model_results, error
     

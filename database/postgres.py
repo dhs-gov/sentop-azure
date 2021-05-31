@@ -18,6 +18,7 @@ class Database:
         self.results_table_suffix = "_results"
         self.lda_words_table_suffix = "_lda_words"
         self.bertopic_words_table_suffix = "_bertopic_words"
+        self.top2vec_words_table_suffix = "_top2vec_words"
 
     # -------------------------------- GENERAL ----------------------------------
 
@@ -183,6 +184,78 @@ class Database:
         finally:
             self.close_connection()
 
+   # -------------------------------- TOP2VEC WORDS ----------------------------------
+
+    def create_top2vec_table(self, id, topics):
+        tablename = str(id) + self.top2vec_words_table_suffix + "_nooverlap"
+        #print("In create top2vec_table: ", tablename)
+
+        self.open_connection()
+        if self.table_exists(tablename):
+            # Remove existing Top2Vec words table.
+            #print("Removing top2vec table...")
+            self.remove_table(tablename)
+            #print("Removed existing Top2Vec words table: ", tablename)
+
+        try:
+            stmt = ("CREATE TABLE " + tablename +
+                " (num int NOT NULL, topic int, word text, weight float, PRIMARY KEY (num))")
+            self.execute_stmt(stmt)
+            num = 0
+            for topic in topics:
+                #print("topic numb: ", topic.topic_num)
+                for i in range(len(topic.words)):
+                    # Update submissions table
+                    stmt = ("INSERT INTO " + tablename +
+                        "(num, topic, word, weight) VALUES (%s,%s,%s,%s)")
+                    data = (num, topic.topic_num, topic.words[i], topic.weights[i])
+                    self.execute_stmt_data(stmt, data)
+                    num = num + 1
+            #print("Created Top2Vec words table.")
+
+        except (Exception, psycopg2.DatabaseError) as e:
+            globalutils.show_stack_trace(str(e))
+        finally:
+            self.close_connection()
+
+    def create_top2vec_nooverlap_table(self, id, topics, duplicate_words):
+        tablename = str(id) + self.top2vec_words_table_suffix
+        #print("In create bertopics_table: ", tablename)
+
+        self.open_connection()
+        if self.table_exists(tablename):
+            # Remove existing Top2Vec words table.
+            #print("Removing top2vec table...")
+            self.remove_table(tablename)
+            #print("Removed existing Top2Vec words table: ", tablename)
+
+        try:
+            stmt = ("CREATE TABLE " + tablename +
+                " (num int NOT NULL, topic int, word text, weight float, PRIMARY KEY (num))")
+            self.execute_stmt(stmt)
+            num = 0
+            for topic in topics:
+                #print("topic numb: ", topic.topic_num)
+                for i in range(len(topic.words)):
+                    # Update submissions table
+                    if not topic.words[i] in duplicate_words:
+                        stmt = ("INSERT INTO " + tablename +
+                            "(num, topic, word, weight) VALUES (%s,%s,%s,%s)")
+                        data = (num, topic.topic_num, topic.words[i], topic.weights[i])
+                        self.execute_stmt_data(stmt, data)
+                        num = num + 1
+            #print("Created Top2Vec non-overlapping words table.")
+
+        except (Exception, psycopg2.DatabaseError) as e:
+            globalutils.show_stack_trace(str(e))
+        finally:
+            self.close_connection()
+
+
+    def get_sentiment(self, id, sentiments):
+        for sentiment in sentiments:
+            if sentiment.id == id:
+                return sentiment
 
    # -------------------------------- LDA WORDS ----------------------------------
 
@@ -322,8 +395,15 @@ class Database:
 
     # -------------------------------- RESULTS ----------------------------------
 
-    def create_result_table(self, id, id_list, data_list, sentiment_results, bert_sentence_topics, bertopic_topics, lda_sentence_topics, lda_topics):
+    def create_result_table(self, id, id_list, data_list, sentiment_results, top2vec_results, bertopic_results, lda_results):
         
+        top2vec_sentence_topics = top2vec_results.topic_per_row
+        top2vec_topics = top2vec_results.topics_list    
+        bert_sentence_topics = bertopic_results.topic_per_row
+        bertopic_topics = bertopic_results.topics_list
+        lda_sentence_topics = lda_results.topic_per_row
+        lda_topics = lda_results.topics_list
+
         # NOTE: data is a list of [id, text]
         #num_list = globalutils.column(data, 0)
         #data_list = globalutils.column(data, 1)
@@ -364,7 +444,6 @@ class Database:
                     data = (id_list[i], data_list[i], class3.data_list[i], class5.data_list[i], emotion1.data_list[i], emotion2.data_list[i], offensive1.data_list[i], lda_topic, bert_topic)
                     self.execute_stmt_data(stmt, data)
                 #num = num + 1
-            print("---------------------------------")
             print("Combined sentiment and topics.")
             print(f"Created database tables.")
 
