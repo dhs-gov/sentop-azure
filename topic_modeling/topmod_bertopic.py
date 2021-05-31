@@ -234,7 +234,7 @@ def get_best_model_name(rows, all_stop_words):
         return None, None, None, None, None, "No final topic per row was determined."
         
 
-    sentlog.append(f"<b>&#8226; Final model: </b>{best_model_name}<br>")
+    sentlog.append(f"<b>&#8226; Final Topics: </b>{best_model_name}<br>")
     sentlog.append("<pre>")
     sentlog.append(f"- num topics: {best_num_topics}")
     sentlog.append(f"- num outliers: {best_num_outliers}")
@@ -242,12 +242,7 @@ def get_best_model_name(rows, all_stop_words):
     sentlog.append(f"- num word overlap: {best_num_overlapping_words}")
     sentlog.append("</pre>")
 
-    sentlog.append(f"<b>&#8226; Final num topic word overlap:</b> {len(best_overlapping_words)}<br>")
-    sentlog.append(f"<b>&#8226; Final topic word overlap:</b>")
-    sentlog.append("<pre>")
-    for x in best_overlapping_words:
-        sentlog.append(f"- {x}")
-    sentlog.append("</pre>")
+
 
     return best_model_name, best_topic_model, best_topic_per_row, best_topics_list, best_overlapping_words, None
 
@@ -266,6 +261,13 @@ def get_topics(rows, all_stop_words):
     print(f"Using embedding model: {model}")
     best_topics_list = get_topics_words_list(topic_per_row, topic_model, True)
 
+    sentlog.append(f"<b>&#8226; Final num topic word overlap:</b> {len(best_overlapping_words)}<br>")
+    sentlog.append(f"<b>&#8226; Final topic word overlap:</b>")
+    sentlog.append("<pre>")
+    for x in best_overlapping_words:
+        sentlog.append(f"- {x}")
+    sentlog.append("</pre>")
+    
     topic_model_results = config.TopicModelResults(topic_per_row, topics_list, best_overlapping_words)
 
     return topic_model_results, None
