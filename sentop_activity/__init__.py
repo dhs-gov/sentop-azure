@@ -8,7 +8,7 @@ from sentiment_analysis import class3
 from sentiment_analysis import class5 
 from sentiment_analysis import emotion1 
 from sentiment_analysis import emotion2
-from question_answer import qa
+from question_answer import qa_adaptnlp
 #from sentiment_analysis import hate -- couldn't detect hate
 #from sentiment_analysis import irony -- lots of false positives/negatives
 from sentiment_analysis import offensive1 
@@ -104,11 +104,12 @@ def main(name: object) -> json:
     #qa.assess(data_list)
     question = "What is the problem?"
     print("Question: ", question)
-    '''
-    results = qa.assess(question, data_list)
-    for result in results:
-        print(f"QA result: {result.answer},  confidence: {result.score} ")
-    '''
+ 
+    # The QA models results in VS Code 'func host start' termination.
+    #qa_adaptnlp.assess(data_list)
+    #for result in results:
+    #    print(f"QA result: {result.answer},  confidence: {result.score} ")
+    
 
     # ------------------------------ GET Top2Vec -------------------------------
     sentlog.append("<hr>")
