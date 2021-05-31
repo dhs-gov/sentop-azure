@@ -123,6 +123,7 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
 
    # -------------------------- CHECK QUERY PARAMS -----------------------------
 
+    sentlog.append("<br><br>")
     sentlog.append("<h1>Request</h1>\n")
 
     sentop_id, kms_id, is_test, error = check_query_params(req)
