@@ -1,4 +1,6 @@
 from transformers import pipeline
+from globals import globalutils
+
 #from transformers import AutoTokenizer, AutoModelForQuestionAnswering
 
 # tokenizer1 = AutoTokenizer.from_pretrained("distilbert-base-cased-distilled-squad")
