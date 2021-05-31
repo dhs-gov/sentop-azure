@@ -79,7 +79,7 @@ html_start = """<html>\n
              <head>
              <style>
                 body {line-height: 140%;}
-                h1 {font-size: 22px; font-weight: bold; color: #235668;}
+                h1 {font-size: 24px; font-weight: bold; color: #235668;}
                 h2 {font-size: 20px; font-weight: bold; color: #5498b0;}
                 h3 {font-size: 16px; font-weight: bold; color: brown;}
                 pre {font-size: 14px;}
