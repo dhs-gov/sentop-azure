@@ -144,7 +144,7 @@ def main(name: object) -> json:
         db.create_top2vec_table(sentop_id, top2vec_results.topics_list)
         db.create_top2vec_nooverlap_table(sentop_id, top2vec_results.topics_list, top2vec_results.duplicate_words_across_topics)
     else:
-        sentlog.append(f"ERROR! No BERTopic topics could be generated.\n")
+        sentlog.append(f"ERROR! No Top2Vec topics could be generated.\n")
 
     # -------------------------------- GET LDA ---------------------------------
 

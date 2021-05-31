@@ -46,6 +46,8 @@ def get_topics(data_list, all_stop_words):
     try:
         num_docs = len(data_preprocessed)
         model = Top2Vec(data_preprocessed)
+        # The universal sentence encoder requires a 1GB download, so use default Top2Vec config.
+        #model = Top2Vec(data_preprocessed, embedding_model='universal-sentence-encoder')
 
         for i in range(num_docs):
             list = []
@@ -118,6 +120,6 @@ def get_topics(data_list, all_stop_words):
 
     except Exception as e:
         sentlog.append(f"Exception with top2vec possibly due to inadequate number of documents: {e}")
-        return None, None, str(e)
+        return None, str(e)
 
 
