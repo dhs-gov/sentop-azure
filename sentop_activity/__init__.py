@@ -8,6 +8,7 @@ from sentiment_analysis import class3
 from sentiment_analysis import class5 
 from sentiment_analysis import emotion1 
 from sentiment_analysis import emotion2
+from question_answer import qa
 #from sentiment_analysis import hate -- couldn't detect hate
 #from sentiment_analysis import irony -- lots of false positives/negatives
 from sentiment_analysis import offensive1 
@@ -97,6 +98,17 @@ def main(name: object) -> json:
     #for r in sentiment_results:
     #    print(f"Got id: {r.id}")
     #    print(f"GOt list: {r.data_list}")
+
+    # ---------------------------- GET Question Answer ------------------------------
+
+    #qa.assess(data_list)
+    question = "What is the problem?"
+    print("Question: ", question)
+    '''
+    results = qa.assess(question, data_list)
+    for result in results:
+        print(f"QA result: {result.answer},  confidence: {result.score} ")
+    '''
 
     # ------------------------------ GET Top2Vec -------------------------------
     sentlog.append("<hr>")
