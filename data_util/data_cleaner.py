@@ -30,14 +30,6 @@ def clean_postgres_json(text):
     text = text.replace("'", "''")
     return text
 
-'''
-# JSON: Don't remove quotes
-def clean_json(text):
-    text = text.replace('\r','')
-    text = text.replace('\n','')
-    text = text.replace('\t','')
-    return text
-'''
 
 # Clean non-JSON text. 
 def clean(text):
