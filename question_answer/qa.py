@@ -9,10 +9,10 @@ from transformers import pipeline
 #
 # tokenizer4 = AutoTokenizer.from_pretrained("distilbert-base-uncased-distilled-squad")
 # model4 = AutoModelForQuestionAnswering.from_pretrained("distilbert-base-uncased-distilled-squad")
-nlp1 = pipeline("question-answering", model="distilbert-base-cased-distilled-squad",
-                       tokenizer="distilbert-base-cased-distilled-squad")
-nlp2 = pipeline("question-answering", model="valhalla/longformer-base-4096-finetuned-squadv1",
-                       tokenizer="valhalla/longformer-base-4096-finetuned-squadv1")
+nlp1 = pipeline("question-answering", model="deepset/roberta-base-squad2",
+                       tokenizer="deepset/roberta-base-squad2")
+nlp2 = pipeline("question-answering", model="bert-large-uncased-whole-word-masking-finetuned-squad",
+                       tokenizer="bert-large-uncased-whole-word-masking-finetuned-squad")
 nlp3 = pipeline("question-answering", model="distilbert-base-uncased-distilled-squad",
                        tokenizer="distilbert-base-uncased-distilled-squad")
 
