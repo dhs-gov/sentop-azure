@@ -7,12 +7,6 @@ from . import config_topic_mod as config
 from globals import globalutils
 from data_util import data_cleaner
 
-'''
-class KeyWeight:
-    def __init__(self, key, weight):
-        self.key = key
-        self.weight = weight
-'''
 
 def get_coherence(data_preprocessed, k):
     
@@ -42,9 +36,7 @@ def get_coherence(data_preprocessed, k):
     for i in range(mdl.k):
         #print('Top words of topic #{}'.format(k))
         print(mdl.get_topic_words(i, top_n=10))
-
     mdl.summary()
-
 
     for j in range(mdl.k):
         print('Topic #{}'.format(j))
@@ -67,7 +59,6 @@ def get_coherence(data_preprocessed, k):
     #print('==== Coherence : {} ===='.format(preset))
     #print('Average:', average_coherence, '\nPer Topic:', coherence_per_topic)
     #print()
-
 
     return coherence_score
 
@@ -139,19 +130,6 @@ def get_topic_data(data_preprocessed, k):
     return topic_per_row, topics_list, None
 
 
-def bert_to_wordnet_pos_tag(bert_tag):
-    if bert_tag.startswith('J'):
-        return wordnet.ADJ
-    elif bert_tag.startswith('V'):
-        return wordnet.VERB
-    elif bert_tag.startswith('N'):
-        return wordnet.NOUN
-    elif bert_tag.startswith('R'):
-        return wordnet.ADV
-    else:          
-        return None
-
-
 def check_duplicate_words_across_topics(topics_list):
     duplicate_words = []
     for topic in topics_list:
@@ -191,7 +169,6 @@ def get_topics(data_list, all_stop_words):
 
     data_preprocessed = data_cleaner.topic_modeling_clean_stop(data_list, all_stop_words)
     #data_preprocessed = lemmatize(data_preprocessed, stop_words)
-
 
     # ------------------------- GET COHERENCE SCORES -------------------------
 
