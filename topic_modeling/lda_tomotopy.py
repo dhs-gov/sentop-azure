@@ -103,6 +103,8 @@ def get_topic_data(data_preprocessed, k):
         #print("DOC TOPCS: ", doc.get_topics(5))
         highest_topic_list =  doc.get_topics(1)
         #print("HIGHEST TOPIC LIST: ", highest_topic_list)
+        highest_topic_listz =  doc.get_topics()
+        #print("ALL TOPIC LIST: ", highest_topic_listz)
         highest_topic_tuple = highest_topic_list[0]
         #print("HIGHEST TOPIC TUPLE: ", highest_topic_tuple)
         highest_topic_val = highest_topic_tuple[0]
