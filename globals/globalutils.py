@@ -239,7 +239,7 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, top2v
     xlsx_out = output_dir_path + "\\" + id + "_results.xlsx"
     ws1 = wb.active
     ws1.title = "Results"
-    ws1.append(['ID', 'Text', 'BERTopic Topic', 'LDA Topic', 'Top2Vec', class3.name, class5.name, emotion1.name, emotion2.name, offensive1.name])
+    ws1.append(['ID', 'Document', 'BERTopic Topic', 'LDA Topic', 'Top2Vec', class3.name, class5.name, emotion1.name, emotion2.name, offensive1.name])
     ws1['A1'].font = Font(bold=True)
     ws1['B1'].font = Font(bold=True)
     # Topic columns
