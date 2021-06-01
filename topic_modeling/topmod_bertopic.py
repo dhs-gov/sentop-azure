@@ -135,7 +135,8 @@ def get_best_model_name(rows, all_stop_words):
         topic_per_row = None
         try:
             topic_per_row, probs = topic_model.fit_transform(rows)
-            #print("PROBS: %s", probs)
+            #print("BERTopic topics: %s", topic_per_row)
+            #print("BERTopic PROBS: %s", probs)
             if not topic_per_row:
                 # Topics could not be generated
                 sentlog.append(f"<div style=\"font-weight: bold; color: #e97e16; \">&#8226; WARNING! Could not generate topics using model {model_name}.</div><br>")
