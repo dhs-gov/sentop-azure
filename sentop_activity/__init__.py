@@ -89,7 +89,7 @@ def main(name: object) -> json:
     annotation = data_in_obj.annotation
     #sentlog.append(f"Annotation found : {annotation}")
 
-    # ---------------------------- GET SENTIMENTS ------------------------------
+    # --------------------------- SENTIMENT ANALYSIS ---------------------------
     sentlog.append("<h1>Sentiment Analyses</h1>")
 
     # Perform sentiment analyses
@@ -99,7 +99,7 @@ def main(name: object) -> json:
     #    print(f"Got id: {r.id}")
     #    print(f"GOt list: {r.data_list}")
 
-    # ---------------------------- GET Question Answer ------------------------------
+    # ------------------------- GET Question Answer ----------------------------
 
     #qa.assess(data_list)
     question = "What is the problem?"
@@ -109,12 +109,14 @@ def main(name: object) -> json:
     #qa_adaptnlp.assess(data_list)
     #for result in results:
     #    print(f"QA result: {result.answer},  confidence: {result.score} ")
-    
 
-    # ------------------------------ GET Top2Vec -------------------------------
+    # ---------------------------- TOPIC MODELING ------------------------------
+   
     sentlog.append("<hr>")
     sentlog.append("<h1>Topic Modeling</h1>\n")
 
+    '''
+    # -------------------------------- Top2Vec ---------------------------------
     # Perform Top2Vec
     sentlog.append("<h2>Top2Vec</h2>\n")
     sentlog.append("<b>&#8226; URL: </b><a href=\"https://github.com/ddangelov/Top2Vec\">https://github.com/ddangelov/Top2Vec</a><br>")
@@ -129,9 +131,9 @@ def main(name: object) -> json:
         db.create_top2vec_nooverlap_table(sentop_id, top2vec_results.topics_list, top2vec_results.duplicate_words_across_topics)
     else:
         sentlog.append(f"ERROR! No Top2Vec topics could be generated.\n")
-
-    # -------------------------------- GET LDA ---------------------------------
-
+    '''
+    # ---------------------------------- LDA -----------------------------------
+ 
     sentlog.append("<h2>Tomotopy (LDA)</h2>\n")
     sentlog.append("SENTOP assesses Tomotopy coherence scores for topic sizes <i>k</i>=2..10. The topic size <k> with the highest coherence score is selected as the final LDA topic size.<br><br>")
     sentlog.append("<b>&#8226; URL: </b><a href=\"https:/https://github.com/bab2min/tomotopy\">https://github.com/bab2min/tomotopy</a><br>")
@@ -154,7 +156,7 @@ def main(name: object) -> json:
         sentlog.append("<div style=\"color: #e97e16; font-weight: bold; \">&#8226; Warning: LDA topics could not be generated.</div>")
 
 
-    # ----------------------------- GET BERTopic -------------------------------
+    # ------------------------------- BERTopic ---------------------------------
 
     sentlog.append("<h2 style=\"font-size: 20px; font-weight: bold; color: #blue;\">BERTopic</h2>\n")
     sentlog.append("SENTOP assesses BERTopic topics using multiple NLP sentence embedding models. The final topics are selected based on the model that produces (1) the highest number of topics, (2) the lowest topic word overlap, and (3) a number of outliers less than 2% of the total number of documents.<br><br>")
@@ -179,13 +181,13 @@ def main(name: object) -> json:
     sentlog.append("<h2>Status</h2>\n")
     # Write to database
     db = postgres.Database()
-    db.create_result_table(sentop_id, row_id_list, data_list, sentiment_results, top2vec_results, bertopic_results, lda_results)
+    db.create_result_table(sentop_id, row_id_list, data_list, sentiment_results, bertopic_results, lda_results)
     
     sentlog.append(f"<b>&#8226; PostgreSQL tables:</b> Completed<br>")
 
     # ---------------------------- RESULTS TO XLSX -----------------------------
 
-    globalutils.generate_excel(sentop_id, annotation, row_id_list, data_list, sentiment_results, top2vec_results, bertopic_results, lda_results)
+    globalutils.generate_excel(sentop_id, annotation, row_id_list, data_list, sentiment_results, bertopic_results, lda_results)
 
     sentlog.append(f"<b>&#8226; Excel XLSX files:</b> Completed<br>")
 

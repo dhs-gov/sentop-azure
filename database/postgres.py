@@ -355,6 +355,7 @@ class Database:
             self.close_connection()
 
     def create_bertopic_nooverlap_table(self, id, topics, bert_duplicate_words):
+        
         tablename = str(id) + self.bertopic_words_table_suffix
         #print("In create bertopics_table: ", tablename)
 
@@ -395,10 +396,11 @@ class Database:
 
     # -------------------------------- RESULTS ----------------------------------
 
-    def create_result_table(self, id, id_list, data_list, sentiment_results, top2vec_results, bertopic_results, lda_results):
+    def create_result_table(self, id, id_list, data_list, sentiment_results, bertopic_results, lda_results):
         
-        top2vec_sentence_topics = top2vec_results.topic_per_row
-        top2vec_topics = top2vec_results.topics_list    
+        #top2vec_sentence_topics = top2vec_results.topic_per_row
+        #top2vec_topics = top2vec_results.topics_list    
+
         bert_sentence_topics = bertopic_results.topic_per_row
         bertopic_topics = bertopic_results.topics_list
         lda_sentence_topics = lda_results.topic_per_row
@@ -435,20 +437,19 @@ class Database:
                 lda_topic = None
                 if lda_sentence_topics:
                     lda_topic = lda_sentence_topics[i]
-                top2vec_topic = None
-                if top2vec_sentence_topics:
-                    top2vec_topic = top2vec_sentence_topics[i]
+                #top2vec_topic = None
+                #if top2vec_sentence_topics:
+                #    top2vec_topic = top2vec_sentence_topics[i]
 
                 if (data_list[i]):
                     #print("3Class: ", class3_sentiment_rows[i].sentiment)
                     #print("5Class: ", star5_sentiment_rows[i].sentiment)
 
-                    stmt = ("INSERT INTO " + tablename + "(num, document, class3, class5, emotion1, emotion2, offensive1, lda, bertopic, top2vec) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)")
-                    data = (id_list[i], data_list[i], class3.data_list[i], class5.data_list[i], emotion1.data_list[i], emotion2.data_list[i], offensive1.data_list[i], lda_topic, bert_topic, top2vec_topic)
+                    stmt = ("INSERT INTO " + tablename + "(num, document, class3, class5, emotion1, emotion2, offensive1, lda, bertopic) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)")
+                    data = (id_list[i], data_list[i], class3.data_list[i], class5.data_list[i], emotion1.data_list[i], emotion2.data_list[i], offensive1.data_list[i], lda_topic, bert_topic)
                     self.execute_stmt_data(stmt, data)
                 #num = num + 1
             print("Combined sentiment and topics.")
-            print(f"Created database tables.")
 
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))

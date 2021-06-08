@@ -182,11 +182,11 @@ def get_sentiment(id, sentiments):
             return r
 
 
-def generate_excel(id, annotation, num_list, data_list, sentiment_results, top2vec_results, bertopic_results, lda_results):
+def generate_excel(id, annotation, num_list, data_list, sentiment_results, bertopic_results, lda_results):
    
-    top2vec_sentence_topics = top2vec_results.topic_per_row
-    top2vec_topics = top2vec_results.topics_list
-    top2vec_duplicate_words = top2vec_results.duplicate_words_across_topics
+    #top2vec_sentence_topics = top2vec_results.topic_per_row
+    #top2vec_topics = top2vec_results.topics_list
+    #top2vec_duplicate_words = top2vec_results.duplicate_words_across_topics
 
     bert_sentence_topics = bertopic_results.topic_per_row
     bert_topics = bertopic_results.topics_list
@@ -195,8 +195,6 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, top2v
     lda_sentence_topics = lda_results.topic_per_row
     lda_topics = lda_results.topics_list
     lda_duplicate_words = lda_results.duplicate_words_across_topics
-
-
 
     # NOTE: data is a list of [id, text]
     #num_list = column(data, 0)
@@ -225,7 +223,7 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, top2v
             row_data.append(data_list[i])
             row_data.append(bert_sentence_topics[i])
             row_data.append(lda_sentence_topics[i])
-            row_data.append(top2vec_sentence_topics[i])
+            #row_data.append(top2vec_sentence_topics[i])
             row_data.append(class3.data_list[i])
             row_data.append(class5.data_list[i])
             row_data.append(emotion1.data_list[i])
@@ -247,22 +245,22 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, top2v
     ws1['C1'].font = Font(bold=True)
     ws1['D1'].fill = PatternFill(start_color='FF66FF66', end_color='FF66FF66', fill_type='solid')
     ws1['D1'].font = Font(bold=True)
-    ws1['E1'].fill = PatternFill(start_color='FF66FF66', end_color='FF66FF66', fill_type='solid')
-    ws1['E1'].font = Font(bold=True)
-    # Polarity sentiment columns
 
+    # Polarity sentiment columns
+    ws1['E1'].fill = PatternFill(start_color='FF66FFFF', end_color='FF66FFFF', fill_type='solid')
+    ws1['E1'].font = Font(bold=True)
     ws1['F1'].fill = PatternFill(start_color='FF66FFFF', end_color='FF66FFFF', fill_type='solid')
     ws1['F1'].font = Font(bold=True)
-    ws1['G1'].fill = PatternFill(start_color='FF66FFFF', end_color='FF66FFFF', fill_type='solid')
-    ws1['G1'].font = Font(bold=True)
+
 
     # Emotion sentiment columns
+    ws1['G1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
+    ws1['G1'].font = Font(bold=True)
     ws1['H1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
     ws1['H1'].font = Font(bold=True)
     ws1['I1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
     ws1['I1'].font = Font(bold=True)
-    ws1['J1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
-    ws1['J1'].font = Font(bold=True) 
+
     for i in range(len(rows)):
         ws1.append(rows[i])
 
@@ -274,6 +272,7 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, top2v
     annotation_list.append(annotation)
     ws4.append(annotation_list)
 
+    '''
     # Create Top2Vec topics data
     rows = []
     for i in range(len(top2vec_topics)):
@@ -309,7 +308,7 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, top2v
     ws5.append(['Topic', 'Top Words', 'Weight'])
     for i in range(len(rows)):
         ws5.append(rows[i])  
-
+    '''
 
     # Create BERTopic topics data
     rows = []
