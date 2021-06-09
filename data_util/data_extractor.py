@@ -49,7 +49,7 @@ def get_col_values(ws):
                 params.append(val)
         return params
     except Exception as e:
-        sentlog.append(f"Exception get XLSX col values: {str(e)}.")
+        globalutils.show_stack_trace(str(e))
 
 def get_col_values_as_str(ws):
     sentlog = globalutils.SentopLog()
@@ -62,7 +62,7 @@ def get_col_values_as_str(ws):
                 annotation = annotation + val
         return annotation
     except Exception as e:
-        sentlog.append(f"Exception get XLSX col val as string: {str(e)}.")
+        globalutils.show_stack_trace(str(e))
 
 def get_xlsx_data(bytes):
     sentlog = globalutils.SentopLog()
@@ -193,7 +193,7 @@ def get_xlsx_data(bytes):
                 sentlog.append(f"No user annotation found.")
                 annotation = None
         except Exception as e:
-            sentlog.append(f"Error getting user stop words or annotation: {str(e)}.")
+            globalutils.show_stack_trace(str(e))
             user_stop_words = [] 
             annotation = None
 

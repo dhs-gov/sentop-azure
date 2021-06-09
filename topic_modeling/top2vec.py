@@ -119,7 +119,7 @@ def get_topics(data_list, all_stop_words):
         return topic_model_results, None
 
     except Exception as e:
-        sentlog.append(f"Exception with top2vec possibly due to inadequate number of documents: {e}")
+        globalutils.show_stack_trace(str(e))
         return None, str(e)
 
 

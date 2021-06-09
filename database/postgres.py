@@ -451,7 +451,6 @@ class Database:
                     stmt = ("INSERT INTO " + tablename + "(num, document, class3, class5, emotion1, emotion2, offensive1, lda, bertopic) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)")
                     data = (id_list[i], data_list[i], class3.data_list[i], class5.data_list[i], emotion1.data_list[i], emotion2.data_list[i], offensive1.data_list[i], lda_topic, bert_topic)
                     self.execute_stmt_data(stmt, data)
-                    sentlog.append(f"Added data_list(i): {i}")
 
                 #num = num + 1
             print("Combined sentiment and topics.")

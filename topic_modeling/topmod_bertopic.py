@@ -142,7 +142,7 @@ def get_best_model_name(rows, all_stop_words):
                 sentlog.append(f"<div style=\"font-weight: bold; color: #e97e16; \">&#8226; WARNING! Could not generate topics using model {model_name}.</div><br>")
                 continue
         except ValueError:  #raised if `y` is empty.
-            print("Warning: topics has size 0, probably not enough data.")
+            globalutils.show_stack_trace("BERTopic could not generate topics or probabilities.")
             continue
 
         #print(f"Num topics per rows: {len(topic_per_row)}")

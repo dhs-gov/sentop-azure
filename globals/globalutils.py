@@ -117,11 +117,13 @@ class SentopLog():
 
 
 def show_stack_trace(error_msg):
-    print("Error: ", error_msg)
+    #print("Error: ", error_msg)
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(exc_type, fname, exc_tb.tb_lineno)
-
+    #print(exc_type, fname, exc_tb.tb_lineno)
+    sentlog = SentopLog()
+    #sentlog.append(f"ERROR! {exc_type, fname, exc_tb.tb_lineno, error_msg}<br>")
+    sentlog.append(f"<div style=\"font-weight: bold; color: red; \">&#8226; ERROR! {exc_type, fname, exc_tb.tb_lineno, error_msg}.</div><br>")
 
 @contextmanager
 def suppress_stdout_stderr():
@@ -184,118 +186,102 @@ def get_sentiment(id, sentiments):
 
 def generate_excel(id, annotation, num_list, data_list, sentiment_results, bertopic_results, lda_results):
    
-    #top2vec_sentence_topics = top2vec_results.topic_per_row
-    #top2vec_topics = top2vec_results.topics_list
-    #top2vec_duplicate_words = top2vec_results.duplicate_words_across_topics
+    sentlog = SentopLog()
+    try:
 
-    bert_sentence_topics = bertopic_results.topic_per_row
-    bert_topics = bertopic_results.topics_list
-    bert_duplicate_words = bertopic_results.duplicate_words_across_topics
+        #top2vec_sentence_topics = top2vec_results.topic_per_row
+        #top2vec_topics = top2vec_results.topics_list
+        #top2vec_duplicate_words = top2vec_results.duplicate_words_across_topics
 
-    lda_sentence_topics = lda_results.topic_per_row
-    lda_topics = lda_results.topics_list
-    lda_duplicate_words = lda_results.duplicate_words_across_topics
+        bert_sentence_topics = bertopic_results.topic_per_row
+        bert_topics = bertopic_results.topics_list
+        bert_duplicate_words = bertopic_results.duplicate_words_across_topics
 
-    # NOTE: data is a list of [id, text]
-    #num_list = column(data, 0)
-    #data_list = column(data, 1)
+        lda_sentence_topics = lda_results.topic_per_row
+        lda_topics = lda_results.topics_list
+        lda_duplicate_words = lda_results.duplicate_words_across_topics
 
-    #input_dir_path = config.data_dir_path.get("input")
-    output_dir_path = config.data_dir_path.get("output")
+        # NOTE: data is a list of [id, text]
+        #num_list = column(data, 0)
+        #data_list = column(data, 1)
 
-    #for r in sentiment_results:
-    #    print(f"Got Exel id: {r.id}")
-    #    print(f"GOt Excel list: {r.data_list}")
+        #input_dir_path = config.data_dir_path.get("input")
+        output_dir_path = config.data_dir_path.get("output")
 
-    class3 = get_sentiment('class3', sentiment_results)
-    print(f"class3 type: {type(class3)}")
-    class5 = get_sentiment('class5', sentiment_results)
-    emotion1 = get_sentiment('emotion1', sentiment_results)
-    offensive1 = get_sentiment('offensive1', sentiment_results) 
-    emotion2 = get_sentiment('emotion2', sentiment_results)
+        #for r in sentiment_results:
+        #    print(f"Got Exel id: {r.id}")
+        #    print(f"GOt Excel list: {r.data_list}")
 
-    # Create results data
-    rows = []
-    for i in range(len(data_list)):
-        row_data = []
-        if (data_list[i]):
-            row_data.append(num_list[i])
-            row_data.append(data_list[i])
-            row_data.append(bert_sentence_topics[i])
-            row_data.append(lda_sentence_topics[i])
-            #row_data.append(top2vec_sentence_topics[i])
-            row_data.append(class3.data_list[i])
-            row_data.append(class5.data_list[i])
-            row_data.append(emotion1.data_list[i])
-            row_data.append(emotion2.data_list[i])
-            row_data.append(offensive1.data_list[i])
-            rows.append(row_data)
+        class3 = get_sentiment('class3', sentiment_results)
+        print(f"class3 type: {type(class3)}")
+        class5 = get_sentiment('class5', sentiment_results)
+        emotion1 = get_sentiment('emotion1', sentiment_results)
+        offensive1 = get_sentiment('offensive1', sentiment_results) 
+        emotion2 = get_sentiment('emotion2', sentiment_results)
 
-
-    # Create results XLSX
-    wb = Workbook()
-    xlsx_out = output_dir_path + "\\" + id + "_results.xlsx"
-    ws1 = wb.active
-    ws1.title = "Results"
-    ws1.append(['ID', 'Document', 'BERTopic Topic', 'LDA Topic', 'Top2Vec', class3.name, class5.name, emotion1.name, emotion2.name, offensive1.name])
-    ws1['A1'].font = Font(bold=True)
-    ws1['B1'].font = Font(bold=True)
-    # Topic columns
-    ws1['C1'].fill = PatternFill(start_color='FF66FF66', end_color='FF66FF66', fill_type='solid')
-    ws1['C1'].font = Font(bold=True)
-    ws1['D1'].fill = PatternFill(start_color='FF66FF66', end_color='FF66FF66', fill_type='solid')
-    ws1['D1'].font = Font(bold=True)
-
-    # Polarity sentiment columns
-    ws1['E1'].fill = PatternFill(start_color='FF66FFFF', end_color='FF66FFFF', fill_type='solid')
-    ws1['E1'].font = Font(bold=True)
-    ws1['F1'].fill = PatternFill(start_color='FF66FFFF', end_color='FF66FFFF', fill_type='solid')
-    ws1['F1'].font = Font(bold=True)
-
-
-    # Emotion sentiment columns
-    ws1['G1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
-    ws1['G1'].font = Font(bold=True)
-    ws1['H1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
-    ws1['H1'].font = Font(bold=True)
-    ws1['I1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
-    ws1['I1'].font = Font(bold=True)
-
-    for i in range(len(rows)):
-        ws1.append(rows[i])
-
-
-     # Create Annotation XLSX sheet
-    ws4 = wb.create_sheet(title="Annotation")
-    fields = ['Annotation']
-    annotation_list = []
-    annotation_list.append(annotation)
-    ws4.append(annotation_list)
-
-    '''
-    # Create Top2Vec topics data
-    rows = []
-    for i in range(len(top2vec_topics)):
-        for j in range(len(top2vec_topics[i].words)):
+        # Create results data
+        rows = []
+        for i in range(len(data_list)):
             row_data = []
-            row_data.append(top2vec_topics[i].topic_num)
-            row_data.append(top2vec_topics[i].words[j])
-            row_data.append(float(top2vec_topics[i].weights[j]))
-            rows.append(row_data)
+            if (data_list[i]):
+                row_data.append(num_list[i])
+                row_data.append(data_list[i])
+                row_data.append(bert_sentence_topics[i])
+                row_data.append(lda_sentence_topics[i])
+                #row_data.append(top2vec_sentence_topics[i])
+                row_data.append(class3.data_list[i])
+                row_data.append(class5.data_list[i])
+                row_data.append(emotion1.data_list[i])
+                row_data.append(emotion2.data_list[i])
+                row_data.append(offensive1.data_list[i])
+                rows.append(row_data)
 
 
-    # Create Top2Vec topics data XLSX sheet
-    ws5 = wb.create_sheet(title="Top2Vec")
-    ws5.append(['Topic', 'Top Words', 'Weight'])
-    for i in range(len(rows)):
-        ws5.append(rows[i])
+        # Create results XLSX
+        wb = Workbook()
+        xlsx_out = output_dir_path + "\\" + id + "_results.xlsx"
+        ws1 = wb.active
+        ws1.title = "Results"
+        ws1.append(['ID', 'Document', 'BERTopic Topic', 'LDA Topic', 'Top2Vec', class3.name, class5.name, emotion1.name, emotion2.name, offensive1.name])
+        ws1['A1'].font = Font(bold=True)
+        ws1['B1'].font = Font(bold=True)
+        # Topic columns
+        ws1['C1'].fill = PatternFill(start_color='FF66FF66', end_color='FF66FF66', fill_type='solid')
+        ws1['C1'].font = Font(bold=True)
+        ws1['D1'].fill = PatternFill(start_color='FF66FF66', end_color='FF66FF66', fill_type='solid')
+        ws1['D1'].font = Font(bold=True)
+
+        # Polarity sentiment columns
+        ws1['E1'].fill = PatternFill(start_color='FF66FFFF', end_color='FF66FFFF', fill_type='solid')
+        ws1['E1'].font = Font(bold=True)
+        ws1['F1'].fill = PatternFill(start_color='FF66FFFF', end_color='FF66FFFF', fill_type='solid')
+        ws1['F1'].font = Font(bold=True)
 
 
-    # Create Top2Vec non-overlapping topic words data
-    rows = []
-    for i in range(len(top2vec_topics)):
-        for j in range(len(top2vec_topics[i].words)):
-            if not top2vec_topics[i].words[j] in top2vec_duplicate_words:
+        # Emotion sentiment columns
+        ws1['G1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
+        ws1['G1'].font = Font(bold=True)
+        ws1['H1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
+        ws1['H1'].font = Font(bold=True)
+        ws1['I1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
+        ws1['I1'].font = Font(bold=True)
+
+        for i in range(len(rows)):
+            ws1.append(rows[i])
+
+
+        # Create Annotation XLSX sheet
+        ws4 = wb.create_sheet(title="Annotation")
+        fields = ['Annotation']
+        annotation_list = []
+        annotation_list.append(annotation)
+        ws4.append(annotation_list)
+
+        '''
+        # Create Top2Vec topics data
+        rows = []
+        for i in range(len(top2vec_topics)):
+            for j in range(len(top2vec_topics[i].words)):
                 row_data = []
                 row_data.append(top2vec_topics[i].topic_num)
                 row_data.append(top2vec_topics[i].words[j])
@@ -303,36 +289,36 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, berto
                 rows.append(row_data)
 
 
-    # Create Top2Vec non-overlapping topics data XLSX sheet
-    ws5 = wb.create_sheet(title="Top2Vec Non-Overlapping Topics")
-    ws5.append(['Topic', 'Top Words', 'Weight'])
-    for i in range(len(rows)):
-        ws5.append(rows[i])  
-    '''
-
-    # Create BERTopic topics data
-    rows = []
-    for i in range(len(bert_topics)):
-        for j in range(len(bert_topics[i].words)):
-            row_data = []
-            row_data.append(bert_topics[i].topic_num)
-            row_data.append(bert_topics[i].words[j])
-            row_data.append(float(bert_topics[i].weights[j]))
-            rows.append(row_data)
+        # Create Top2Vec topics data XLSX sheet
+        ws5 = wb.create_sheet(title="Top2Vec")
+        ws5.append(['Topic', 'Top Words', 'Weight'])
+        for i in range(len(rows)):
+            ws5.append(rows[i])
 
 
-    # Create BERTopic topics data XLSX sheet
-    ws2 = wb.create_sheet(title="BERTopic")
-    ws2.append(['Topic', 'Top Words', 'Weight'])
-    for i in range(len(rows)):
-        ws2.append(rows[i])
+        # Create Top2Vec non-overlapping topic words data
+        rows = []
+        for i in range(len(top2vec_topics)):
+            for j in range(len(top2vec_topics[i].words)):
+                if not top2vec_topics[i].words[j] in top2vec_duplicate_words:
+                    row_data = []
+                    row_data.append(top2vec_topics[i].topic_num)
+                    row_data.append(top2vec_topics[i].words[j])
+                    row_data.append(float(top2vec_topics[i].weights[j]))
+                    rows.append(row_data)
 
 
-    # Create BERTopic non-overlapping topic words data
-    rows = []
-    for i in range(len(bert_topics)):
-        for j in range(len(bert_topics[i].words)):
-            if not bert_topics[i].words[j] in bert_duplicate_words:
+        # Create Top2Vec non-overlapping topics data XLSX sheet
+        ws5 = wb.create_sheet(title="Top2Vec Non-Overlapping Topics")
+        ws5.append(['Topic', 'Top Words', 'Weight'])
+        for i in range(len(rows)):
+            ws5.append(rows[i])  
+        '''
+
+        # Create BERTopic topics data
+        rows = []
+        for i in range(len(bert_topics)):
+            for j in range(len(bert_topics[i].words)):
                 row_data = []
                 row_data.append(bert_topics[i].topic_num)
                 row_data.append(bert_topics[i].words[j])
@@ -340,53 +326,74 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, berto
                 rows.append(row_data)
 
 
-    # Create BERTopic non-overlapping topics data XLSX sheet
-    ws2 = wb.create_sheet(title="BERTopic Non-Overlapping Topics")
-    ws2.append(['Topic', 'Top Words', 'Weight'])
-    for i in range(len(rows)):
-        ws2.append(rows[i])  
+        # Create BERTopic topics data XLSX sheet
+        ws2 = wb.create_sheet(title="BERTopic")
+        ws2.append(['Topic', 'Top Words', 'Weight'])
+        for i in range(len(rows)):
+            ws2.append(rows[i])
 
 
-    # Create LDA topics data
-    rows = []
-    for i in range(len(lda_topics)):
-        #print("LDA i: ", i)
-        for j in range(len(lda_topics[i].words)):
-            #print("LDA j: ", j)
-            row_data = []
-            row_data.append(lda_topics[i].topic_num)
-            row_data.append(lda_topics[i].words[j])
-            row_data.append(float(lda_topics[i].weights[j]))
-            rows.append(row_data)
+        # Create BERTopic non-overlapping topic words data
+        rows = []
+        for i in range(len(bert_topics)):
+            for j in range(len(bert_topics[i].words)):
+                if not bert_topics[i].words[j] in bert_duplicate_words:
+                    row_data = []
+                    row_data.append(bert_topics[i].topic_num)
+                    row_data.append(bert_topics[i].words[j])
+                    row_data.append(float(bert_topics[i].weights[j]))
+                    rows.append(row_data)
 
 
-     # Create LDA topics data XLSX sheet
-    ws3 = wb.create_sheet(title="LDA")
-    fields = ['Topic', 'Top Words', 'Weight']
-    ws3.append(fields)
-    for i in range(len(rows)):
-        ws3.append(rows[i])
+        # Create BERTopic non-overlapping topics data XLSX sheet
+        ws2 = wb.create_sheet(title="BERTopic Non-Overlapping Topics")
+        ws2.append(['Topic', 'Top Words', 'Weight'])
+        for i in range(len(rows)):
+            ws2.append(rows[i])  
 
 
-    # Create LDA non-overlapping topics words data
-    rows = []
-    for i in range(len(lda_topics)):
-        #print("LDA i: ", i)
-        for j in range(len(lda_topics[i].words)):
-            if not lda_topics[i].words[j] in lda_duplicate_words:
+        # Create LDA topics data
+        rows = []
+        for i in range(len(lda_topics)):
+            #print("LDA i: ", i)
+            for j in range(len(lda_topics[i].words)):
+                #print("LDA j: ", j)
                 row_data = []
                 row_data.append(lda_topics[i].topic_num)
                 row_data.append(lda_topics[i].words[j])
                 row_data.append(float(lda_topics[i].weights[j]))
                 rows.append(row_data)
 
-     # Create LDA topics data XLSX sheet
-    ws3 = wb.create_sheet(title="LDA Non-Overlapping Topics")
-    fields = ['Topic', 'Top Words', 'Weight']
-    ws3.append(fields)
-    for i in range(len(rows)):
-        ws3.append(rows[i])
+
+        # Create LDA topics data XLSX sheet
+        ws3 = wb.create_sheet(title="LDA")
+        fields = ['Topic', 'Top Words', 'Weight']
+        ws3.append(fields)
+        for i in range(len(rows)):
+            ws3.append(rows[i])
 
 
-    # Save XLSX
-    wb.save(filename = xlsx_out)
+        # Create LDA non-overlapping topics words data
+        rows = []
+        for i in range(len(lda_topics)):
+            #print("LDA i: ", i)
+            for j in range(len(lda_topics[i].words)):
+                if not lda_topics[i].words[j] in lda_duplicate_words:
+                    row_data = []
+                    row_data.append(lda_topics[i].topic_num)
+                    row_data.append(lda_topics[i].words[j])
+                    row_data.append(float(lda_topics[i].weights[j]))
+                    rows.append(row_data)
+
+        # Create LDA topics data XLSX sheet
+        ws3 = wb.create_sheet(title="LDA Non-Overlapping Topics")
+        fields = ['Topic', 'Top Words', 'Weight']
+        ws3.append(fields)
+        for i in range(len(rows)):
+            ws3.append(rows[i])
+
+        # Save XLSX
+        wb.save(filename = xlsx_out)
+    except Exception as e:
+        show_stack_trace(e)
+
