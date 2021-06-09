@@ -3,7 +3,7 @@ from collections import Counter
 from adaptnlp import EasySequenceClassifier
 from topic_modeling import topmod_bertopic
 from topic_modeling import lda_tomotopy
-from topic_modeling import top2vec
+#from topic_modeling import top2vec
 from sentiment_analysis import class3 
 from sentiment_analysis import class5 
 from sentiment_analysis import emotion1 
