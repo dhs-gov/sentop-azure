@@ -26,15 +26,15 @@ class Database:
         try:
             self.conn = psycopg2.connect(host=self.url, database=self.db, user=self.username, password=self.pwd)
             self.conn.autocommit = True
-        except (Exception, psycopg2.DatabaseError) as error:
-            print("Error establishing postgres connection: ", error)
+        except (Exception, psycopg2.DatabaseError) as e:
+            globalutils.show_stack_trace(str(e))
 
 
     def close_connection(self):
         try:
             self.conn.close()
-        except (Exception, psycopg2.DatabaseError) as error:
-            print("Error closing postgres connection: ", error)
+        except (Exception, psycopg2.DatabaseError) as e:
+            globalutils.show_stack_trace(str(e))
 
 
     def execute_stmt(self, sql):
@@ -44,8 +44,8 @@ class Database:
             cur.execute(sql)
             self.conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
-            print("Error executing postgres statement: ", error)
+        except (Exception, psycopg2.DatabaseError) as e:
+            globalutils.show_stack_trace(f"Error executing SQL: {sql}, {str(e)}")
 
 
     def execute_stmt_data(self, sql, data):
@@ -56,7 +56,7 @@ class Database:
             self.conn.commit()
             cur.close()
         except (Exception, psycopg2.DatabaseError) as e:
-            print(f"Error executing postgres statement with data: {e}")
+            globalutils.show_stack_trace(str(e))
 
 
     def table_exists(self, tablename):
@@ -69,8 +69,7 @@ class Database:
             return bool(cur.rowcount)
 
         except (Exception, psycopg2.DatabaseError) as e:
-            print(f"Error checking if postgres table exists: {e}")
-            return bool(cur.rowcount)
+            globalutils.show_stack_trace(str(e))
 
 
     # Remove table
@@ -81,7 +80,7 @@ class Database:
             self.execute_stmt(stmt)
 
         except (Exception, psycopg2.DatabaseError) as e:
-            print(f"Error removing postgres table: {e}")
+            globalutils.show_stack_trace(str(e))
 
 
     # Remove all tables associated with ID
@@ -91,14 +90,14 @@ class Database:
             self.remove_table(id + self.lda_words_table_suffix)
             self.remove_table(id + self.bertopic_words_table_suffix)
         except (Exception, psycopg2.DatabaseError) as e:
-            print(f"Error removing all postgres tables: {e}")
+            globalutils.show_stack_trace(str(e))
 
 
     def add_result(self, tablename):
         try:
             print("Test")
         except (Exception, psycopg2.DatabaseError) as e:
-            print(f"Error adding postgres results: {e}")
+            globalutils.show_stack_trace(str(e))
 
 
     def clear_table(self, tablename):
@@ -107,7 +106,7 @@ class Database:
             stmt = "DELETE FROM " + tablename
             self.execute_stmt(stmt)
         except (Exception, psycopg2.DatabaseError) as e:
-            print(f"Error clearing postgres table: {e}")
+            globalutils.show_stack_trace(str(e))
 
 
    # ------------------------------ SUBMISSIONS -------------------------------
@@ -117,8 +116,8 @@ class Database:
             print("Creating submissions table.")
             stmt = "CREATE TABLE submissions (id text, annotation text, json_data text, file_url text, received_date timestamp, completed_date timestamp, status text, message text, PRIMARY KEY(id))"
             self.execute_stmt(stmt)
-        except (Exception, psycopg2.DatabaseError) as error:
-            print("Error creating submissions table: ", error)
+        except (Exception, psycopg2.DatabaseError) as e:
+            globalutils.show_stack_trace(str(e))
 
 
     def add_submission(self, id, file_url):
@@ -146,7 +145,7 @@ class Database:
             return None
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
-            return str(e)
+
         finally:
             self.close_connection()
 
@@ -355,7 +354,7 @@ class Database:
             self.close_connection()
 
     def create_bertopic_nooverlap_table(self, id, topics, bert_duplicate_words):
-        
+
         tablename = str(id) + self.bertopic_words_table_suffix
         #print("In create bertopics_table: ", tablename)
 
@@ -397,14 +396,15 @@ class Database:
     # -------------------------------- RESULTS ----------------------------------
 
     def create_result_table(self, id, id_list, data_list, sentiment_results, bertopic_results, lda_results):
-        
+        sentlog = globalutils.SentopLog()
+
         #top2vec_sentence_topics = top2vec_results.topic_per_row
         #top2vec_topics = top2vec_results.topics_list    
 
         bert_sentence_topics = bertopic_results.topic_per_row
-        bertopic_topics = bertopic_results.topics_list
+        #bertopic_topics = bertopic_results.topics_list
         lda_sentence_topics = lda_results.topic_per_row
-        lda_topics = lda_results.topics_list
+        #lda_topics = lda_results.topics_list
 
         # NOTE: data is a list of [id, text]
         #num_list = globalutils.column(data, 0)
@@ -426,9 +426,12 @@ class Database:
         emotion2 = self.get_sentiment('emotion2', sentiment_results)
 
         try:
-            stmt = ("CREATE TABLE " + tablename + "(num text NOT NULL, document text, class3 text, class5 text, emotion1 text, emotion2, offensive1 text, lda text, bertopic text, top2vec text, PRIMARY KEY (num))")
+            sentlog.append(f"Creating table: {tablename}")
+            stmt = ("CREATE TABLE " + tablename + 
+                " (num text NOT NULL, document text, class3 text, class5 text, emotion1 text, emotion2 text, offensive1 text, lda text, bertopic text, PRIMARY KEY (num))")
             self.execute_stmt(stmt)
             #num = 0
+            sentlog.append(f"Executed creating: {tablename}")
 
             for i in range(len(data_list)):
                 bert_topic = None
@@ -448,10 +451,13 @@ class Database:
                     stmt = ("INSERT INTO " + tablename + "(num, document, class3, class5, emotion1, emotion2, offensive1, lda, bertopic) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)")
                     data = (id_list[i], data_list[i], class3.data_list[i], class5.data_list[i], emotion1.data_list[i], emotion2.data_list[i], offensive1.data_list[i], lda_topic, bert_topic)
                     self.execute_stmt_data(stmt, data)
+                    sentlog.append(f"Added data_list(i): {i}")
+
                 #num = num + 1
             print("Combined sentiment and topics.")
 
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
+            sentlog.append(f"Error! {str(e)}")
         finally:
             self.close_connection()
