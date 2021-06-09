@@ -21,7 +21,6 @@ def get_coherence(data_preprocessed, k):
         try:
             mdl.add_doc(row.strip().split())
         except Exception as e:
-            print("except row: ", row)
             globalutils.show_stack_trace(str(e))
 
     mdl.burn_in = 100
@@ -77,7 +76,6 @@ def get_topic_data(data_preprocessed, k):
         try:
             mdl.add_doc(row.strip().split())
         except Exception as e:
-            print("except row: ", row)
             globalutils.show_stack_trace(str(e))
 
     mdl.burn_in = 100
