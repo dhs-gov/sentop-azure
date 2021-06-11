@@ -3,6 +3,7 @@ notes.txt
 deploy-as-zip-to-azure.txt
 sentop_config.py
 hugginface_models_dont_work.txt
+tokenizers/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
