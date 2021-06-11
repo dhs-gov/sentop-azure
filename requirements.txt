@@ -15,7 +15,7 @@ bertopic
 openpyxl
 bertopic
 sklearn
-flair
+#flair
 psutil
 tomotopy
 #spacy # Read how to do for Azure at https://williamandrewgriffin.com/best-way-to-deploy-spacy-to-azure-functions/
