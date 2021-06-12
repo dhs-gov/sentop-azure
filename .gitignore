@@ -4,6 +4,8 @@ deploy-as-zip-to-azure.txt
 sentop_config.py
 hugginface_models_dont_work.txt
 tokenizers/
+*.pickle
+settings.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
