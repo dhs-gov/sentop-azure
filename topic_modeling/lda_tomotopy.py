@@ -6,6 +6,7 @@ import re
 from . import config_topic_mod as config     
 from globals import globalutils
 from data_util import data_cleaner
+from globals import sentop_log
 
 
 def get_coherence(data_preprocessed, k):
@@ -64,7 +65,7 @@ def get_coherence(data_preprocessed, k):
 
 def get_topic_data(data_preprocessed, k):
 
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
      
     #print("Getting topics for size ", k)
     mdl = tp.LDAModel(seed=1, min_df=5, rm_top=0, k=k)  
@@ -154,7 +155,7 @@ def check_duplicate_words_across_topics(topics_list):
 # Do not remove duplicate/overlapping terms since Venn Diagrams will be able to 
 # show which terms overlap.
 def get_topics(data_list, all_stop_words):
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
     #sentlog.append("----------------------------------------------------------")
     print("Assessing LDA (Tomotopy)")
 

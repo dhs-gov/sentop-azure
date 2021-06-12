@@ -5,7 +5,7 @@ from globals import globalutils
 import numpy as np
 from nltk.tokenize import word_tokenize
 from . import config_topic_mod as config     
-
+from globals import sentop_log
 
 def check_best_overlapping_words_across_topics(topic_model, topics_no_duplicates):
     best_overlapping_words = []
@@ -29,7 +29,7 @@ def check_best_overlapping_words_across_topics(topic_model, topics_no_duplicates
 
 
 def get_topics_words_list(topic_per_row, topic_model, print_topics):
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
     topics_no_duplicates = []
     for t in topic_per_row:
         if t not in topics_no_duplicates:
@@ -67,7 +67,7 @@ def get_topics_words_list(topic_per_row, topic_model, print_topics):
 
 
 def get_topic_overlap_words(topic_per_row, topic_model):
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
     topics_no_duplicates = []
     for t in topic_per_row:
         if t not in topics_no_duplicates:
@@ -89,7 +89,7 @@ def get_topic_overlap_words(topic_per_row, topic_model):
 # focused topics (i.e., topics comprising more salient words).
 def get_best_model_name(rows, all_stop_words):
 
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
 
     best_topic_model = None
     best_topic_per_row = None
@@ -134,6 +134,9 @@ def get_best_model_name(rows, all_stop_words):
 
         topic_per_row = None
         try:
+            # IMPORTANT! The following can lead to 'int too big to convert'
+            # errors. To fix, set self.tokenizer.model_max_length = 512
+            # in .venv/Lib/site-packages/flair/embeddings/document.py: line 59.
             topic_per_row, probs = topic_model.fit_transform(rows)
             #print("BERTopic topics: %s", topic_per_row)
             #print("BERTopic PROBS: %s", probs)
@@ -141,8 +144,8 @@ def get_best_model_name(rows, all_stop_words):
                 # Topics could not be generated
                 sentlog.append(f"<div style=\"font-weight: bold; color: #e97e16; \">&#8226; WARNING! Could not generate topics using model {model_name}.</div><br>")
                 continue
-        except ValueError:  #raised if `y` is empty.
-            globalutils.show_stack_trace("BERTopic could not generate topics or probabilities.")
+        except Exception as e:  #raised if `y` is empty.
+            globalutils.show_stack_trace(f"BERTopic could not generate topics or probabilities with model {model_name}: {str(e)}.")
             continue
 
         #print(f"Num topics per rows: {len(topic_per_row)}")
@@ -250,7 +253,7 @@ def get_best_model_name(rows, all_stop_words):
 
 def get_topics(rows, all_stop_words):
 
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
     #sentlog.append("----------------------------------------------------------")
     print("Assessing BERTopic")
     #sentlog.append("BERTopic tests several NLP sentence embedding models and selects the model that has the lowest number of outlier documents and lowest number of overlapping topic words.")

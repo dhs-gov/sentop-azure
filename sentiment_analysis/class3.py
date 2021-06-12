@@ -7,6 +7,7 @@ positive
 
 from numpy import negative
 from globals import globalutils
+from globals import sentop_log
 
 
 model_name = "cardiffnlp/twitter-roberta-base-sentiment"
@@ -52,7 +53,7 @@ def get_sentiment(classifier, text):
         return calc_sentiment(confidence_score)
 
 def print_totals(sentiments):
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
     negative_num = 0
     neutral_num = 0
     positive_num = 0
@@ -71,7 +72,7 @@ def print_totals(sentiments):
     sentlog.append(f"</pre>")
 
 def assess(classifier, docs):
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
     sentlog.append(f"<h2>3-Class Polarity</h2>")
     sentlog.append(f"<b>Model:</b> <a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a><br>")
     sentiments = []

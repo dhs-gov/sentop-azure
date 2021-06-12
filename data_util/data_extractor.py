@@ -4,6 +4,7 @@ import nltk
 nltk.download('punkt', download_dir='.')
 #nltk.data.path.append("/")
 from globals import globalutils
+from globals import sentop_log
 from openpyxl import load_workbook
 from database import postgres
 import urllib3
@@ -13,7 +14,7 @@ from . import data_cleaner
 
 # Return data, error, stop_words
 def get_json_payload(json_obj):
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
     user_stop_words = []
     annotation = None
     try:
@@ -40,7 +41,7 @@ def get_json_payload(json_obj):
 
 
 def get_col_values(ws):
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
     try:
         params = []
         for row in ws.iter_rows():
@@ -52,7 +53,7 @@ def get_col_values(ws):
         globalutils.show_stack_trace(str(e))
 
 def get_col_values_as_str(ws):
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
 
     try:
         annotation = ""
@@ -65,7 +66,7 @@ def get_col_values_as_str(ws):
         globalutils.show_stack_trace(str(e))
 
 def get_xlsx_data(bytes):
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
     try:
         xlsx = io.BytesIO(bytes)
         wb = load_workbook(xlsx)
@@ -105,7 +106,7 @@ def get_xlsx_data(bytes):
                         break
 
         if not id_column:
-            sentlog.append("<div style=\"color: #e97e16; font-weight: bold; \">&#8226; Warning:  1 with color #FF0000 in XLSX file. Will use row number as ID.</div>")
+            sentlog.append("<div style=\"color: #e97e16; font-weight: bold; \">&#8226; Warning: No header cell with color #FF0000 in XLSX file. Will use row number as ID.</div>")
         else:
             sentlog.append(f"<b>&#8226; Found data ID column:</b> {id_column}<br>")
 
@@ -117,6 +118,7 @@ def get_xlsx_data(bytes):
         row_num = 0
         data_list = []
         data_id = None
+        found_data = False
         for row in ws.iter_rows():
             row_num = row_num + 1
             col_num = 0
@@ -137,7 +139,11 @@ def get_xlsx_data(bytes):
                         color_in_hex = color_in_hex[2:]
                         #print(f"{cell_address}: {color_in_hex}")
                         if color_in_hex == 'FFFF00':  # Yellow
-                            print(f"Found data cell: {cell_address}")
+                            #print(f"Found data cell: {cell_address}")
+                            if not found_data:
+                                found_data = True
+                                print("Found highlighted data.")
+
                             val = col_cell.value
 
                             if not val:
@@ -213,7 +219,7 @@ def get_xlsx_data(bytes):
 
 # Return data[], user_stop_words[], error
 def get_data(req, sentop_id, kms_id):
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
 
     try:
         # -------------------------- GET JSON DATA -----------------------------

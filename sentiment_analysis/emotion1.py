@@ -7,6 +7,7 @@ sadness
 '''
 
 from globals import globalutils
+from globals import sentop_log
 
 model_name = "cardiffnlp/twitter-roberta-base-emotion"
 
@@ -54,7 +55,7 @@ def get_sentiment(classifier, text):
         return calc_sentiment(confidence_score)
 
 def print_totals(sentiments):
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
     joy = 0
     anger = 0
     optimism = 0
@@ -79,7 +80,7 @@ def print_totals(sentiments):
 
 
 def assess(classifier, docs):
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
     sentlog.append(f"<h2>Emotion 1</h2>\n")
     sentlog.append(f"<b>Model: </b> <a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a><br>")
     sentiments = []

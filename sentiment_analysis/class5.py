@@ -8,6 +8,7 @@ This model classifies sentiment polarity using the following labels:
 '''
 
 from globals import globalutils
+from globals import sentop_log
 
 model_name = "nlptown/bert-base-multilingual-uncased-sentiment"
 
@@ -56,7 +57,7 @@ def get_sentiment(classifier, text):
         return calc_sentiment(confidence_score)
 
 def print_totals(sentiments):
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
     star1 = 0
     star2 = 0
     star3 = 0
@@ -83,7 +84,7 @@ def print_totals(sentiments):
 
 
 def assess(classifier, docs):
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
     sentlog.append(f"<h2>5-Class Polarity</h2>\n")
     sentlog.append(f"<b>Model: </b> <a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a><br>")
     sentiments = []

@@ -1,5 +1,7 @@
 from adaptnlp import EasyQuestionAnswering 
 from globals import globalutils
+from globals import sentop_log
+
 
 def assess(docs):
     query = "What is the meaning of life?"
@@ -10,7 +12,7 @@ def assess(docs):
     qa = EasyQuestionAnswering()
 
 
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
     sentlog.append(f"<h2>Question-Answer</h2>")
     #sentlog.append(f"<b>Model:</b> <a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a><br>")
 

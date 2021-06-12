@@ -1,6 +1,6 @@
 # ----------------------------------- SENTOP -----------------------------------
 SENTOP_VERSION=0.1
-
+SENTOP_LOG=""
 
 # ------------------------------ DATA PREPROCESSING ----------------------------
 
@@ -15,6 +15,4 @@ MAX_TOKENS=400
 # Min docs needed for topic modeling
 MIN_DOCS_TM=100
 
-# Runtime log - This will be cleared before each run and written to 
-# a text file after each run.
-SENTOP_LOG = ""
+

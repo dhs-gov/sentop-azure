@@ -1,8 +1,9 @@
 from globals import globalvars
 from globals import globalutils
+from globals import sentop_log
 import re
 
-# Clean and remove stop words for topic modeling: LDA, Top2Vec. 
+# Clean and remove stop words for topic modeling: LDA. 
 def topic_modeling_clean_stop(data_list, stop_words):
 
     cleaned = []
@@ -46,7 +47,7 @@ def clean(text):
 
 def remove_invalid_datapoints(row_id_list, data_list, all_stop_words):
 
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
     ignored_one_stopword = 0
     ignored_all_stopwords = 0
     ignored_no_alpha = 0
