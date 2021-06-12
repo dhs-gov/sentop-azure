@@ -41,10 +41,10 @@ def get_topics_words_list(topic_per_row, topic_model, print_topics):
     topics_list = []
     print(f"Num topics: {len(topics_no_duplicates)}")
     if print_topics:
-        sentlog.append(f"<pre>")
+        sentlog.info(f"<pre>", html_tag='other')
     for n in topics_no_duplicates:
         if print_topics:
-            sentlog.append(f"Topic: {n}")
+            sentlog.info(f"Topic: {n}", html_tag='p')
         words_list = []
         weights_list = []
 
@@ -53,7 +53,7 @@ def get_topics_words_list(topic_per_row, topic_model, print_topics):
             words_list.append(word[0])
             weights_list.append(str(word[1]))
             if print_topics:
-                sentlog.append("- " + word[0] + ", " + str(word[1]))
+                sentlog.info("- " + word[0] + ", " + str(word[1]), html_tag='p')
 
         topic = config.Topic(n, words_list, weights_list)
         topics_list.append(topic)
@@ -61,8 +61,8 @@ def get_topics_words_list(topic_per_row, topic_model, print_topics):
     # Show most frequent topics
     #sentlog.append("Topic Distribution:")
     if print_topics:
-        sentlog.append(f"\n{topic_model.get_topic_freq()}") # .head()
-        sentlog.append(f"</pre>")
+        sentlog.info(f"\n{topic_model.get_topic_freq()}", html_tag='p') # .head()
+        sentlog.info(f"</pre>", html_tag='other')
     return topics_list
 
 
@@ -114,8 +114,8 @@ def get_best_model_name(rows, all_stop_words):
 
     # Selects the first model that satisfies the requirements.
 
-    sentlog.append(f"<b>&#8226; Assessments:</b>")
-    sentlog.append(f"<pre>")
+    sentlog.info(f"Assessments|", html_tag='keyval')
+    sentlog.info(f"<pre>", html_tag='other')
 
     for model_name in embedding_models:
         # Prepare custom models
@@ -142,7 +142,7 @@ def get_best_model_name(rows, all_stop_words):
             #print("BERTopic PROBS: %s", probs)
             if not topic_per_row:
                 # Topics could not be generated
-                sentlog.append(f"<div style=\"font-weight: bold; color: #e97e16; \">&#8226; WARNING! Could not generate topics using model {model_name}.</div><br>")
+                sentlog.warn(f"Could not generate topics using model {model_name}.")
                 continue
         except Exception as e:  #raised if `y` is empty.
             globalutils.show_stack_trace(f"BERTopic could not generate topics or probabilities with model {model_name}: {str(e)}.")
@@ -226,9 +226,9 @@ def get_best_model_name(rows, all_stop_words):
         #else:
         #    sentlog.append(f"Outlier perc ({outlier_perc}) is > than best outlier perc ({best_outlier_perc}). Ignoring model.")
                 
-        sentlog.append(f"- Model: {model_name}, Outliers: {outlier_num}, Topics: {num_unique_topics}, Overlap: {num_overlapping_words}")
+        sentlog.info(f"- Model: {model_name}, Outliers: {outlier_num}, Topics: {num_unique_topics}, Overlap: {num_overlapping_words}", html_tag='p')
 
-    sentlog.append("</pre>")
+    sentlog.info("</pre>", html_tag='other')
 
     if not best_model_name:
         return None, None, None, None, None, "No final topic model was determined."
@@ -238,13 +238,13 @@ def get_best_model_name(rows, all_stop_words):
         return None, None, None, None, None, "No final topic per row was determined."
         
 
-    sentlog.append(f"<b>&#8226; Final Topics: </b>{best_model_name}<br>")
-    sentlog.append("<pre>")
-    sentlog.append(f"- num topics: {best_num_topics}")
-    sentlog.append(f"- num outliers: {best_num_outliers}")
-    sentlog.append(f"- perc outliers: {best_outlier_perc}")
-    sentlog.append(f"- num word overlap: {best_num_overlapping_words}")
-    sentlog.append("</pre>")
+    sentlog.info(f"Final Topics|{best_model_name}", html_tag='keyval')
+    sentlog.info("<pre>", html_tag='other')
+    sentlog.info(f"- num topics: {best_num_topics}", html_tag='p')
+    sentlog.info(f"- num outliers: {best_num_outliers}", html_tag='p')
+    sentlog.info(f"- perc outliers: {best_outlier_perc}", html_tag='p')
+    sentlog.info(f"- num word overlap: {best_num_overlapping_words}", html_tag='p')
+    sentlog.info("</pre>", html_tag='other')
 
 
 
@@ -265,12 +265,12 @@ def get_topics(rows, all_stop_words):
     print(f"Using embedding model: {model}")
     best_topics_list = get_topics_words_list(topic_per_row, topic_model, True)
 
-    sentlog.append(f"<b>&#8226; Final num topic word overlap:</b> {len(best_overlapping_words)}<br>")
-    sentlog.append(f"<b>&#8226; Final topic word overlap:</b>")
-    sentlog.append("<pre>")
+    sentlog.info(f"Final num topic word overlap|{len(best_overlapping_words)}", html_tag='keyval')
+    sentlog.info(f"Final topic word overlap|", html_tag='keyval')
+    sentlog.info("<pre>", html_tag='other')
     for x in best_overlapping_words:
-        sentlog.append(f"- {x}")
-    sentlog.append("</pre>")
+        sentlog.info(f"- {x}", html_tag='p')
+    sentlog.info("</pre>", html_tag='other')
     
     topic_model_results = config.TopicModelResults(topic_per_row, topics_list, best_overlapping_words)
 

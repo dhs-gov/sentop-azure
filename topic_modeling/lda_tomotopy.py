@@ -115,7 +115,7 @@ def get_topic_data(data_preprocessed, k):
    
     topics_list = []
     for n in range (0, mdl.k):
-        sentlog.append(f"Topic: {n}")
+        sentlog.info(f"Topic: {n}", html_tag='p')
         words_list = []
         weights_list = []
         words = mdl.get_topic_words(n, top_n=config.NUM_WORDS_PER_TOPIC)
@@ -123,7 +123,7 @@ def get_topic_data(data_preprocessed, k):
             #print("word: ", word)
             words_list.append(word[0])
             weights_list.append(str(word[1]))
-            sentlog.append("- " + word[0] + ", " + str(word[1]))
+            sentlog.info("- " + word[0] + ", " + str(word[1]), html_tag='p')
 
         topic = config.Topic(n, words_list, weights_list)
         topics_list.append(topic)
@@ -174,42 +174,42 @@ def get_topics(data_list, all_stop_words):
     # ------------------------- GET COHERENCE SCORES -------------------------
 
     # Get coherence scores for topics sizes 2-n
-    sentlog.append(f"<b>&#8226; Assessments:</b>")
-    sentlog.append(f"<pre>")
+    sentlog.info(f"Assessments|", html_tag='keyval')
+    sentlog.info(f"<pre>", html_tag='other')
 
     highest_topic_coherence = -999999.99
     highest_coherence_topic_num = -999
     for k in range(2, 11):
         topic_coherence_score = get_coherence(data_preprocessed, k)
         #print("Coh score for %s is %s", k, topic_coherence_score)
-        sentlog.append(f"- k: {k}, Coherence Score: {topic_coherence_score}")
+        sentlog.info(f"- k: {k}, Coherence Score: {topic_coherence_score}", html_tag='p')
 
         if topic_coherence_score > highest_topic_coherence:
             highest_topic_coherence = topic_coherence_score
             highest_coherence_topic_num = k
 
-    sentlog.append(f"</pre>")
+    sentlog.info(f"</pre>", html_tag='other')
 
     # -------- GET TOPICS FOR FOR K WITH HIGHEST COHERENCE SCORE --------
 
-    sentlog.append(f"<b>&#8226; Final Topics:</b><br>")
-    sentlog.append("<pre>")
+    sentlog.info(f"Final Topics|", html_tag='keyval')
+    sentlog.info("<pre>", html_tag='other')
 
-    sentlog.append(f"- Num topics: {highest_coherence_topic_num}")
-    sentlog.append(f"- Coherence score: {highest_topic_coherence}")
-    sentlog.append("")
+    sentlog.info(f"- Num topics: {highest_coherence_topic_num}", html_tag='p')
+    sentlog.info(f"- Coherence score: {highest_topic_coherence}", html_tag='p')
+    sentlog.info("", html_tag='p')
 
     topics_per_rows, topics_list, error = get_topic_data(data_preprocessed, highest_coherence_topic_num)
-    sentlog.append("</pre>")
+    sentlog.info("</pre>", html_tag='other')
 
     duplicate_words_across_topics = check_duplicate_words_across_topics(topics_list)
 
-    sentlog.append(f"<b>&#8226; Final num topic word overlap:</b> {len(duplicate_words_across_topics)}<br>")
-    sentlog.append(f"<b>&#8226; Final topic word overlap:</b>")
-    sentlog.append("<pre>")
+    sentlog.info(f"Final num topic word overlap|{len(duplicate_words_across_topics)}", html_tag='keyval')
+    sentlog.info(f"Final topic word overlap|", html_tag='keyval')
+    sentlog.info("<pre>", html_tag='other')
     for x in duplicate_words_across_topics:
-        sentlog.append(f"- {x}")
-    sentlog.append("</pre>")
+        sentlog.info(f"- {x}", html_tag='p')
+    sentlog.info("</pre>", html_tag='other')
 
     #sentlog.append(f"Common words across topics: {duplicate_words_across_topics}.\n")
 
