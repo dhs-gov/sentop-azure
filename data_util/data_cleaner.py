@@ -5,7 +5,6 @@ import re
 
 # Clean and remove stop words for topic modeling: LDA. 
 def topic_modeling_clean_stop(data_list, stop_words):
-
     cleaned = []
     for text in data_list:
         # Remove all punctuation (NOTE: this is not removing some periods for some reason)
@@ -46,7 +45,6 @@ def clean(text):
 
 
 def remove_invalid_datapoints(row_id_list, data_list, all_stop_words):
-
     sentlog = sentop_log.SentopLog()
     ignored_one_stopword = 0
     ignored_all_stopwords = 0
@@ -70,7 +68,6 @@ def remove_invalid_datapoints(row_id_list, data_list, all_stop_words):
         text_preproc = text.lower()
         text_preproc = re.sub(r'[^\w\s]', ' ', text_preproc)
         text_preproc.strip()
-        #print(f"text_preproc: {text_preproc}")
 
         # --------------------------- CHECK TEXT -------------------------------
 
@@ -111,14 +108,11 @@ def remove_invalid_datapoints(row_id_list, data_list, all_stop_words):
 
         # --------------------------- CLEAN TEXT -------------------------------
 
-        #print(f"Text: {text}")
         # Trim if number of words in text is greater than max allowed
         trimmed_text = text_checker.trim_text(text)
-        #print(f"trimmed_text: {trimmed_text}")
 
         # Clean data
         cleaned_text = clean(trimmed_text)
-        #print(f"cleaned_text: {cleaned_text}")
 
         # Check if text comprises all stop words 
         if not cleaned_text:

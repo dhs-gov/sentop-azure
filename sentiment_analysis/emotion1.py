@@ -82,7 +82,7 @@ def print_totals(sentiments):
 def assess(classifier, docs):
     sentlog = sentop_log.SentopLog()
     sentlog.info(f"Emotion 1", html_tag='h2')
-    sentlog.info(f"<b>Model|<a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a>", html_tag='keyval')
+    sentlog.info(f"Model|<a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a>", html_tag='keyval')
     sentiments = []
     i = 0
     for doc in docs:
