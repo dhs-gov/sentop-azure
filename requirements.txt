@@ -9,15 +9,14 @@ torch==1.6.0+cpu
 torchvision==0.7.0+cpu
 jsonpickle==2.0.0
 adaptnlp==0.2.2
+tomotopy==0.12.0
+bertopic==0.8.1
 flair==0.7
 nltk==3.6.2
 numpy==1.20.3
-bertopic==0.8.1
 openpyxl==3.0.7
-bertopic==0.8.1
 sklearn==0.0
 psutil==5.8.0
-tomotopy==0.12.0
 #spacy # Read how to do for Azure at https://williamandrewgriffin.com/best-way-to-deploy-spacy-to-azure-functions/
 psycopg2==2.8.6
 urllib3==1.26.5
