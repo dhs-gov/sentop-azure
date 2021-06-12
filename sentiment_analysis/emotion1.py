@@ -71,18 +71,18 @@ def print_totals(sentiments):
         elif sentiment == 'sadness':
             sadness = sadness + 1
 
-    sentlog.append(f"<pre>")
-    sentlog.append(f"- Joy: {joy}")
-    sentlog.append(f"- Anger: {anger}")
-    sentlog.append(f"- Optimism: {optimism}")
-    sentlog.append(f"- Sadness: {sadness}")
-    sentlog.append(f"</pre>")
+    sentlog.info(f"<pre>", html_tag='other')
+    sentlog.info(f"- Joy: {joy}", html_tag='p')
+    sentlog.info(f"- Anger: {anger}", html_tag='p')
+    sentlog.info(f"- Optimism: {optimism}", html_tag='p')
+    sentlog.info(f"- Sadness: {sadness}", html_tag='p')
+    sentlog.info(f"</pre>", html_tag='other')
 
 
 def assess(classifier, docs):
     sentlog = sentop_log.SentopLog()
-    sentlog.append(f"<h2>Emotion 1</h2>\n")
-    sentlog.append(f"<b>Model: </b> <a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a><br>")
+    sentlog.info(f"Emotion 1", html_tag='h2')
+    sentlog.info(f"<b>Model|<a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a>", html_tag='keyval')
     sentiments = []
     i = 0
     for doc in docs:

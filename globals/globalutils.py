@@ -16,7 +16,7 @@ from openpyxl.styles import Color, PatternFill, Font, Border
 from openpyxl.styles import colors
 from openpyxl.cell import Cell
 from dateutil import tz
-from globals import sentop_log
+from . import sentop_log
 
 class Sentiments:
     def __init__(self, id, name, model_name, type, data_list):
@@ -77,8 +77,14 @@ class TextChecker():
             text = text[0:globalvars.MAX_TOKENS]
         return text
 
-
-
+def show_stack_trace(error_msg):
+    #print("Error: ", error_msg)
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    #print(exc_type, fname, exc_tb.tb_lineno)
+    sentlog = sentop_log.SentopLog()
+    #sentlog.append(f"ERROR! {exc_type, fname, exc_tb.tb_lineno, error_msg}<br>")
+    sentlog.error(f"{exc_type, fname, exc_tb.tb_lineno, error_msg}")
 
 @contextmanager
 def suppress_stdout_stderr():
@@ -164,7 +170,7 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, berto
         #    print(f"GOt Excel list: {r.data_list}")
 
         class3 = get_sentiment('class3', sentiment_results)
-        print(f"class3 type: {type(class3)}")
+        # print(f"class3 type: {type(class3)}")
         class5 = get_sentiment('class5', sentiment_results)
         emotion1 = get_sentiment('emotion1', sentiment_results)
         offensive1 = get_sentiment('offensive1', sentiment_results) 

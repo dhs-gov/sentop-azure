@@ -13,7 +13,7 @@ def assess(docs):
 
 
     sentlog = sentop_log.SentopLog()
-    sentlog.append(f"<h2>Question-Answer</h2>")
+    sentlog.info(f"Question-Answer", html_tag='h2')
     #sentlog.append(f"<b>Model:</b> <a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a><br>")
 
     i = 0

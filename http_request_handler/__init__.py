@@ -126,7 +126,7 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
         sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse(error, status_code=400)
     if is_test:
-        sentlog.info("Test request successful.")
+        sentlog.info("Test request successful.", html_tag='p')
         sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse("SENTOP test successful.", status_code=200)
 
@@ -134,8 +134,8 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
     #if kms_id.startswith('http'):
     #    kms_id = f"<a href=\\\"{kms_id}\\\" target=\\\"_blank\\\">{kms_id}</a>"
 
-    sentlog.info(f"<b>&#8226; KMS ID:</b> {kms_id}", html_tag='p')
-    sentlog.info(f"<b>&#8226; SENTOP ID:</b> {sentop_id}", html_tag='p')
+    sentlog.info(f"KMS ID|{kms_id}", html_tag='keyval')
+    sentlog.info(f"SENTOP ID|{sentop_id}", html_tag='keyval')
 
    # ---------------------- SAVE REQUEST DATA TO DB ----------------------------
 
@@ -148,33 +148,33 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
 
    # ------------------------ CONVERT INCOMING DATA ----------------------------
 
-    sentlog.append("<h1>Data</h1>\n")
+    sentlog.info("Data", html_tag='h1')
     row_id_list, data_list, user_stop_words, annotation, error = data_extractor.get_data(req, sentop_id, kms_id)
 
     if error:
-        sentlog.append(f"<div style=\"font-weight: bold; color: red; \">&#8226; ERROR! Could not find file. Aborting.</div><br>")
+        sentlog.error(f"Could not find file. Aborting.")
         sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse(error, status_code=400)
     elif not data_list:
-        sentlog.append(f"<div style=\"color: red; \"ERROR! Could not find JSON or file data.</div><br>")
+        sentlog.error(f"Could not find JSON or file data.")
         sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse("Error retrieving JSON or file data.", status_code=400)
     
-    sentlog.append(f"<b>&#8226; Non-blank documents:</b> {len(data_list)}<br>")
+    sentlog.info(f"Non-blank documents|{len(data_list)}", html_tag='keyval')
 
     if annotation:
-        sentlog.append(f"<b>&#8226; Annotation: </b> {annotation}<br>")
+        sentlog.info(f"Annotation|{annotation}", html_tag='keyval')
         annotation_error = db.add_annotation(sentop_id, annotation)
         if annotation_error:
-            sentlog.append(f"<div style=\"font-weight: bold; color: #e97e16; \">&#8226; WARNING! Could not update annotation in database: {annotation_error}.</div><br>")
+            sentlog.warn(f"Could not update annotation in database: {annotation_error}.")
 
     if len(data_list) != len(row_id_list):
-        sentlog.append("<div style=\"color: red; \">ERROR! Number of rows does not match number of documents.</div><br>")
+        sentlog.error("Number of rows does not match number of documents.")
         sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse("ERROR! Number of rows does not match number of documents.", status_code=400)
 
     if not user_stop_words:
-        sentlog.append(f"<div style=\"font-weight: bold; color: #e97e16; \">&#8226; WARNING! No user stop words found.</div>")
+        sentlog.warn(f"No user stop words found.")
 
         
     #for i in range(len(row_id_list)):
@@ -190,7 +190,7 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
     row_id_list, data_list, error = data_cleaner.remove_invalid_datapoints(row_id_list, data_list, all_stop_words)
 
     if len(data_list) != len(row_id_list):
-        sentlog.append("ERROR! Number of rows does not match number of documents.")
+        sentlog.error("Number of rows does not match number of documents.")
         sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse("ERROR! Number of rows does not match number of documents.", status_code=400)
 

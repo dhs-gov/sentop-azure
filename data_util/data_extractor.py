@@ -70,11 +70,11 @@ def get_xlsx_data(bytes):
     try:
         xlsx = io.BytesIO(bytes)
         wb = load_workbook(xlsx)
-        sentlog.append(f"<b>&#8226; Worksheets:</b><br>")
-        sentlog.append("<pre>")
+        sentlog.info(f"Worksheets|", html_tag='keyval')
+        sentlog.info("<pre>", html_tag='other')
         for x in wb.sheetnames:
-            sentlog.append(f"- {x}")
-        sentlog.append("</pre>")
+            sentlog.info(f"- {x}", html_tag='p')
+        sentlog.info("</pre>", html_tag='other')
         ws = wb.worksheets[0]  
 
         # ------------------------ FIND DATA ID COLUMN -------------------------
@@ -101,14 +101,14 @@ def get_xlsx_data(bytes):
                 #sentlog.append(f"color_in_hex: {color_in_hex}")
                 if len(color_in_hex) == 6:
                     if color_in_hex == 'FF0000':
-                        sentlog.append(f"<b>&#8226; Found cell color:</b> 'FF0000' at cell {cell_address}<br>")
+                        sentlog.info(f"<b>&#8226; Found cell color:</b> 'FF0000' at cell {cell_address}<br>", html_tag='p')
                         id_column = col_letter
                         break
 
         if not id_column:
-            sentlog.append("<div style=\"color: #e97e16; font-weight: bold; \">&#8226; Warning: No header cell with color #FF0000 in XLSX file. Will use row number as ID.</div>")
+            sentlog.warn("No header cell with color #FF0000 in XLSX file. Will use row number as ID.")
         else:
-            sentlog.append(f"<b>&#8226; Found data ID column:</b> {id_column}<br>")
+            sentlog.info(f"<b>&#8226; Found data ID column:</b> {id_column}<br>", html_tag='p')
 
         # --------------------- GET HIGHLIGHTED DATA CELLS ---------------------
         
@@ -180,11 +180,11 @@ def get_xlsx_data(bytes):
             stop_words_ws = wb.get_sheet_by_name('SENTOP Stop Words')
             if stop_words_ws:
                 user_stop_words = get_col_values(stop_words_ws)
-                sentlog.append(f"<b>&#8226; User stop words:</b><br>")
-                sentlog.append("<pre>")
+                sentlog.info(f"User stop words|", html_tag='keyval')
+                sentlog.info("<pre>", html_tag='other')
                 for x in user_stop_words:
-                    sentlog.append(f"- {x}")
-                sentlog.append("</pre>")
+                    sentlog.info(f"- {x}", html_tag='p')
+                sentlog.info("</pre>", html_tag='other')
             else:
                 #sentlog.append(f"No user stop words found.")
                 user_stop_words = []
@@ -196,7 +196,7 @@ def get_xlsx_data(bytes):
                 annotation = get_col_values_as_str(annotation_ws)
                 #sentlog.append(f"Found user annotation: {annotation}")
             else:
-                sentlog.append(f"No user annotation found.")
+                sentlog.info(f"No user annotation found.", html_tag='p')
                 annotation = None
         except Exception as e:
             globalutils.show_stack_trace(str(e))
@@ -252,15 +252,15 @@ def get_data(req, sentop_id, kms_id):
             print("No JSON body found in request")
 
         if data_list:
-            sentlog.append("<b>&#8226; Data type:</b> JSON<br>")
+            sentlog.info("Data type|JSON", html_tag='keyval')
             return row_id_list, data_list, user_stop_words, annotation, error
         elif not kms_id:
             return None, None,  None, None, "No JSON or file URL received."
 
         # ------------------------ GET FILE DATA ---------------------------
 
-        sentlog.append("<div style=\"color: #e97e16; font-weight: bold; \">&#8226; Warning: No JSON payload found.</div>")
-        sentlog.append(f"<b>&#8226; File URL:</b> {kms_id}.<br>") 
+        sentlog.warn("No JSON payload found.")
+        sentlog.info(f"File URL|{kms_id}.", html_tag='keyval') 
         http = urllib3.PoolManager()
         # NOTE: Use http://, not file://, scheme -- The file must be
         # located where the HTTP server is started. Note that the
@@ -269,7 +269,7 @@ def get_data(req, sentop_id, kms_id):
 
         error = None
         if resp.status == 200:
-            sentlog.append(f"<b>&#8226; File found:</b> True<br>")
+            sentlog.info(f"File found|True", html_tag='keyval')
             try:
 
                 # --------------------- GET XLSX DATA ----------------------
@@ -279,7 +279,7 @@ def get_data(req, sentop_id, kms_id):
                     try:
                         row_id_list, data_list, user_stop_words, annotation, error = get_xlsx_data(resp.data)
                         if data_list:
-                            sentlog.append("<b>&#8226; Data type:</b> XLSX<br>")
+                            sentlog.info("Data type|XLSX", html_tag='keyval')
 
                         if error:
                             return None, None, None, None, error
@@ -288,7 +288,7 @@ def get_data(req, sentop_id, kms_id):
                         return None, None, None, None, str(e)
 
                 else:
-                    sentlog.append("Error: File extension not supported: ", kms_id)
+                    sentlog.error(f"File extension not supported: {kms_id}.")
                     return None, None, None, None, "File extension not supported."
 
                 if data_list:

@@ -71,9 +71,9 @@ def main(name: object) -> json:
 
     start = time.time()
     sentlog = sentop_log.SentopLog()
-    sentlog.append("<br><hr>")
-    sentlog.append("<div style=\"text-align: center; color: #e97e16; \">*** If this line appears more than once, then Azure Function replay has occurred! ***</div>\n")
-    sentlog.append("<hr>")
+    sentlog.info("<br><hr>", html_tag='other')
+    sentlog.info("<div style=\"text-align: center; color: #e97e16; \">*** If this line appears more than once, then Azure Function replay has occurred! ***</div>\n", html_tag='p')
+    sentlog.info("<hr>", html_tag='other')
 
     json_obj = name
     data_in_obj = jsonpickle.decode(json_obj)
@@ -90,7 +90,7 @@ def main(name: object) -> json:
     #sentlog.append(f"Annotation found : {annotation}")
 
     # --------------------------- SENTIMENT ANALYSIS ---------------------------
-    sentlog.append("<h1>Sentiment Analyses</h1>")
+    sentlog.info("Sentiment Analyses", html_tag='h1')
 
     # Perform sentiment analyses
     sentiment_results = get_sentiments(data_list, sentlog)
@@ -112,21 +112,21 @@ def main(name: object) -> json:
 
     # ---------------------------- TOPIC MODELING ------------------------------
    
-    sentlog.append("<hr>")
-    sentlog.append("<h1>Topic Modeling</h1>\n")
+    sentlog.info("<hr>", html_tag='other')
+    sentlog.info("Topic Modeling", html_tag='h1')
 
     # ---------------------------------- LDA -----------------------------------
  
-    sentlog.append("<h2>Tomotopy (LDA)</h2>\n")
-    sentlog.append("SENTOP assesses Tomotopy coherence scores for topic sizes <i>k</i>=2..10. The topic size <k> with the highest coherence score is selected as the final LDA topic size.<br><br>")
-    sentlog.append("<b>&#8226; URL: </b><a href=\"https:/https://github.com/bab2min/tomotopy\">https://github.com/bab2min/tomotopy</a><br>")
+    sentlog.info("Tomotopy (LDA)", html_tag='h2')
+    sentlog.info("SENTOP assesses Tomotopy coherence scores for topic sizes <i>k</i>=2..10. The topic size <k> with the highest coherence score is selected as the final LDA topic size.<br><br>", html_tag='p')
+    sentlog.info("URL|<a href=\"https:/https://github.com/bab2min/tomotopy\">https://github.com/bab2min/tomotopy</a>", html_tag='keyval')
 
     # Perform LDA
     lda_results, lda_error = lda_tomotopy.get_topics(
         data_list, all_stop_words)
 
     if lda_error:
-        sentlog.append(f"ERROR! {lda_error}.\n")
+        sentlog.error(f"{lda_error}")
     elif lda_results.topics_list:
         #sentlog.append(f"LDA topics {lda_topics}.\n")
         db = postgres.Database()
@@ -136,20 +136,20 @@ def main(name: object) -> json:
         #if not lda_error:
         #    sentlog.append(f"LDA Topic Distribution: {Counter(lda_sentence_topics)}.\n")
     else:
-        sentlog.append("<div style=\"color: #e97e16; font-weight: bold; \">&#8226; Warning: LDA topics could not be generated.</div>")
+        sentlog.warn("LDA topics could not be generated.")
 
 
     # ------------------------------- BERTopic ---------------------------------
 
-    sentlog.append("<h2 style=\"font-size: 20px; font-weight: bold; color: #blue;\">BERTopic</h2>\n")
-    sentlog.append("SENTOP assesses BERTopic topics using multiple NLP sentence embedding models. The final topics are selected based on the model that produces (1) the highest number of topics, (2) the lowest topic word overlap, and (3) a number of outliers less than 2% of the total number of documents.<br><br>")
-    sentlog.append("<b>&#8226; URL: </b><a href=\"https://github.com/MaartenGr/BERTopic\">https://github.com/MaartenGr/BERTopic</a><br>")
+    sentlog.info("BERTopic", html_tag='h2')
+    sentlog.info("SENTOP assesses BERTopic topics using multiple NLP sentence embedding models. The final topics are selected based on the model that has (1) the lowest number of outliers, (2) the lowest topic word overlap, and (3) the highest number of topics.<br><br>", html_tag='p')
+    sentlog.info("URL|<a href=\"https://github.com/MaartenGr/BERTopic\">https://github.com/MaartenGr/BERTopic</a><br>", html_tag='keyval')
 
     # Perform BERTopic
     bertopic_results, bert_error = topmod_bertopic.get_topics(data_list, all_stop_words)
 
     if bert_error:
-        sentlog.append(f"ERROR! {bert_error}.\n")
+        sentlog.error(f"{bert_error}.")
     elif bertopic_results.topics_list:
         #sentlog.append("Num bert topics: ", len(bert_topics))
         #sentlog.append(f"BERTopic topics {bert_topics}.\n")
@@ -157,22 +157,22 @@ def main(name: object) -> json:
         db.create_bertopic_table(sentop_id, bertopic_results.topics_list)
         db.create_bertopic_nooverlap_table(sentop_id, bertopic_results.topics_list, bertopic_results.duplicate_words_across_topics)
     else:
-        sentlog.append(f"ERROR! No BERTopic topics could be generated.\n")
+        sentlog.error(f"ERROR! No BERTopic topics could be generated.")
 
 
     # ----------------------------- RESULTS TO DB ------------------------------
-    sentlog.append("<h2>Status</h2>\n")
+    sentlog.info("Status", html_tag='h2')
     # Write to database
     db = postgres.Database()
     db.create_result_table(sentop_id, row_id_list, data_list, sentiment_results, bertopic_results, lda_results)
     
-    sentlog.append(f"<b>&#8226; PostgreSQL tables:</b> Completed<br>")
+    sentlog.info(f"PostgreSQL tables|Completed", html_tag='keyval')
 
     # ---------------------------- RESULTS TO XLSX -----------------------------
 
     globalutils.generate_excel(sentop_id, annotation, row_id_list, data_list, sentiment_results, bertopic_results, lda_results)
 
-    sentlog.append(f"<b>&#8226; Excel XLSX files:</b> Completed<br>")
+    sentlog.info(f"Excel XLSX files|Completed", html_tag='keyval')
 
     # -------------------------------- FINISH ----------------------------------
 
@@ -180,19 +180,19 @@ def main(name: object) -> json:
 
     json_out = jsonpickle.encode(result, unpicklable=False)
     #sentlog.append("JSON STR OUT: ", json_out)
-    sentlog.append(f"<b>&#8226; Completed processing: </b>{kms_id} (SENTOP ID: {sentop_id})<br>")
+    sentlog.info(f"Completed processing|{kms_id}", html_tag='keyval')
     end = time.time() 
 
     hours, rem = divmod(end-start, 3600)
     minutes, seconds = divmod(rem, 60)
-    sentlog.append("<b>&#8226; Elapsed: </b> {:0>2}h {:0>2}m {:0>2}s".format(int(hours),int(minutes),seconds))
+    sentlog.info("Elapsed|{:0>2}h {:0>2}m {:0>2}s".format(int(hours),int(minutes),seconds), html_tag='keyval')
 
     if json_out:
         print("<<<<<<<<<<<<<<<<<<< E N D <<<<<<<<<<<<<<<<<<<")
         sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return json_out
     else:
-        sentlog.append("ERROR! Unknown error performing sentiment analysis and topic modeling.")
+        sentlog.error("ERROR! Unknown error performing sentiment analysis and topic modeling.")
         print("<<<<<<<<<<<<<<<<<<< E N D <<<<<<<<<<<<<<<<<<<")
         return "Unknown error performing sentiment analysis and topic modeling."
 

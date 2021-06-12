@@ -356,12 +356,12 @@ class Database:
         emotion2 = self.get_sentiment('emotion2', sentiment_results)
 
         try:
-            sentlog.append(f"Creating table: {tablename}")
+            sentlog.info(f"Creating table: {tablename}", html_tag='p')
             stmt = ("CREATE TABLE " + tablename + 
                 " (num text NOT NULL, document text, class3 text, class5 text, emotion1 text, emotion2 text, offensive1 text, lda text, bertopic text, PRIMARY KEY (num))")
             self.execute_stmt(stmt)
             #num = 0
-            sentlog.append(f"Executed creating: {tablename}")
+            sentlog.info(f"Executed creating: {tablename}", html_tag='p')
 
             for i in range(len(data_list)):
                 bert_topic = None
@@ -384,6 +384,6 @@ class Database:
 
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
-            sentlog.append(f"Error! {str(e)}")
+            sentlog.info(f"Error! {str(e)}", html_tag='p')
         finally:
             self.close_connection()
