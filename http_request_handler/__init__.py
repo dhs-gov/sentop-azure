@@ -173,10 +173,6 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
     if not user_stop_words:
         sentlog.warn(f"No user stop words found.")
 
-        
-    #for i in range(len(row_id_list)):
-    #    sentlog.append(f"Got: {row_id_list[i]} = {data_list[i]}")
-
    # ---------------------- GET ALL STOP WORDS --------------------------
 
     all_stop_words = globalutils.get_frozen_stopwords(user_stop_words)
@@ -191,7 +187,6 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
         sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse("ERROR! Number of rows does not match number of documents.", status_code=400)
 
-
    # ------------------ CREATE JSON DATA FOR AZURE ACTIVITY --------------------
 
     #sentlog.append("Data in: ", data_list)
@@ -200,19 +195,12 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
     # Since Azure requires that we pass an object that is JSON
     # serializable, we have to convert all data to a JSON object.
     json_obj = jsonpickle.encode(data_list_obj, unpicklable=True)
-    
 
     # ------------------------ CREATE NEW INSTANCE -----------------------------
 
     # Note that "functionName" gets automatically resolved to req.method function name
     # (e.g., 'sentop').
-
-    #sentlog.append("Starting orchestration")
-    #sentlog.append("Starting SENTOP analysis.")
-
     instance_id = await client.start_new(req.route_params["functionName"], None, json_obj)
-
-    #sentlog.append(f"Started orchestration with ID = '{instance_id}'.")
 
     # -------------------------- RETURN RESPONSE -------------------------------
 
