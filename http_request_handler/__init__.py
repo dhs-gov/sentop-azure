@@ -67,11 +67,13 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
     sentlog.reset()
     sentlog.set_level('DEBUG')
 
-
     # ---------------------------- SET LOGGING ---------------------------------
 
-    logging.basicConfig(force=True, format='%(asctime)s %(levelname)-4s [%(filename)s:%(lineno)d] %(message)s', 
-        datefmt='%Y-%m-%d:%H:%M:%S', level=logging.INFO)
+    logging.basicConfig(
+        force=True, 
+        format='%(asctime)s %(levelname)-4s [%(filename)s:%(lineno)d] %(message)s', 
+        datefmt='%Y-%m-%d:%H:%M:%S', 
+        level=logging.INFO)
 
     # Set the logging level for all azure-* libraries
     #logger = logging.getLogger('azure')
@@ -113,8 +115,7 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
     instances = await client.get_status_all()
     for instance in instances:
         if instance:
-            sentlog.warn(f"Old instance still alive.")
-
+            sentlog.warn(f"Old Azure instance still alive.")
 
    # -------------------------- CHECK QUERY PARAMS -----------------------------
 
@@ -129,10 +130,6 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
         sentlog.info("Test request successful.", html_tag='p')
         sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse("SENTOP test successful.", status_code=200)
-
-
-    #if kms_id.startswith('http'):
-    #    kms_id = f"<a href=\\\"{kms_id}\\\" target=\\\"_blank\\\">{kms_id}</a>"
 
     sentlog.info(f"KMS ID|{kms_id}", html_tag='keyval')
     sentlog.info(f"SENTOP ID|{sentop_id}", html_tag='keyval')

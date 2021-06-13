@@ -88,19 +88,13 @@ def assess(classifier, docs):
     sentlog.info(f"5-Class Polarity", html_tag='h2')
     sentlog.info(f"Model|<a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a>", html_tag='keyval')
     sentiments = []
-    i = 0
     for doc in docs:
         #print("doc: ", doc)
         sentiment = get_sentiment(classifier, doc)
-        
         if sentiment:
             sentiments.append(sentiment)
         else:
-            print("Error: sentiment is NoneType")
-
-        #if i % 100 == 0:
-        #    print("Processing 5-class: ", i)
-        i = i + 1
+            sentlog.warn("Sentiment is None type.")
     print_totals(sentiments)
     return globalutils.Sentiments("class5", f"5-Class ({model_name})", model_name, "polarity", sentiments)
 
