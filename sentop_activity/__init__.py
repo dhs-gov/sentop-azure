@@ -60,7 +60,6 @@ class Response:
         self.results_filename = sentop_id + "_results.xlsx"
         self.log_filename = sentop_id + "_log.txt"
 
-
 # ================================== M A I N ===================================
 
 # Here, 'name' is the incoming data_in payload.
