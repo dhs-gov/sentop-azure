@@ -1,5 +1,7 @@
 from docx import Document
+import nltk
 from nltk.tokenize import word_tokenize
+from globals import globalvars
 
 
 def iterate_paragraphs(doc):

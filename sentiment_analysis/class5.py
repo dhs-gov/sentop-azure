@@ -8,6 +8,7 @@ This model classifies sentiment polarity using the following labels:
 '''
 
 from globals import globalutils
+from globals import sentop_log
 
 model_name = "nlptown/bert-base-multilingual-uncased-sentiment"
 
@@ -56,7 +57,7 @@ def get_sentiment(classifier, text):
         return calc_sentiment(confidence_score)
 
 def print_totals(sentiments):
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
     star1 = 0
     star2 = 0
     star3 = 0
@@ -73,33 +74,27 @@ def print_totals(sentiments):
             star4 = star4 + 1
         elif sentiment == '5_stars':
             star5 = star5 + 1
-    sentlog.append(f"<pre>")
-    sentlog.append(f"- 1 Star: {star1}")
-    sentlog.append(f"- 2 Stars: {star2}")
-    sentlog.append(f"- 3 Stars: {star3}")
-    sentlog.append(f"- 4 Stars: {star4}")
-    sentlog.append(f"- 5 Stars: {star5}")
-    sentlog.append(f"</pre>")
+    sentlog.info(f"<pre>", html_tag='other')
+    sentlog.info(f"- 1 Star: {star1}", html_tag='other')
+    sentlog.info(f"- 2 Stars: {star2}", html_tag='p')
+    sentlog.info(f"- 3 Stars: {star3}", html_tag='p')
+    sentlog.info(f"- 4 Stars: {star4}", html_tag='p')
+    sentlog.info(f"- 5 Stars: {star5}", html_tag='p')
+    sentlog.info(f"</pre>", html_tag='other')
 
 
 def assess(classifier, docs):
-    sentlog = globalutils.SentopLog()
-    sentlog.append(f"<h2>5-Class Polarity</h2>\n")
-    sentlog.append(f"<b>Model: </b> <a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a><br>")
+    sentlog = sentop_log.SentopLog()
+    sentlog.info(f"5-Class Polarity", html_tag='h2')
+    sentlog.info(f"Model|<a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a>", html_tag='keyval')
     sentiments = []
-    i = 0
     for doc in docs:
         #print("doc: ", doc)
         sentiment = get_sentiment(classifier, doc)
-        
         if sentiment:
             sentiments.append(sentiment)
         else:
-            print("Error: sentiment is NoneType")
-
-        #if i % 100 == 0:
-        #    print("Processing 5-class: ", i)
-        i = i + 1
+            sentlog.warn("Sentiment is None type.")
     print_totals(sentiments)
     return globalutils.Sentiments("class5", f"5-Class ({model_name})", model_name, "polarity", sentiments)
 

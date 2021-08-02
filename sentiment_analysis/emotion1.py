@@ -7,6 +7,7 @@ sadness
 '''
 
 from globals import globalutils
+from globals import sentop_log
 
 model_name = "cardiffnlp/twitter-roberta-base-emotion"
 
@@ -54,7 +55,7 @@ def get_sentiment(classifier, text):
         return calc_sentiment(confidence_score)
 
 def print_totals(sentiments):
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
     joy = 0
     anger = 0
     optimism = 0
@@ -70,32 +71,26 @@ def print_totals(sentiments):
         elif sentiment == 'sadness':
             sadness = sadness + 1
 
-    sentlog.append(f"<pre>")
-    sentlog.append(f"- Joy: {joy}")
-    sentlog.append(f"- Anger: {anger}")
-    sentlog.append(f"- Optimism: {optimism}")
-    sentlog.append(f"- Sadness: {sadness}")
-    sentlog.append(f"</pre>")
+    sentlog.info(f"<pre>", html_tag='other')
+    sentlog.info(f"- Joy: {joy}", html_tag='p')
+    sentlog.info(f"- Anger: {anger}", html_tag='p')
+    sentlog.info(f"- Optimism: {optimism}", html_tag='p')
+    sentlog.info(f"- Sadness: {sadness}", html_tag='p')
+    sentlog.info(f"</pre>", html_tag='other')
 
 
 def assess(classifier, docs):
-    sentlog = globalutils.SentopLog()
-    sentlog.append(f"<h2>Emotion 1</h2>\n")
-    sentlog.append(f"<b>Model: </b> <a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a><br>")
+    sentlog = sentop_log.SentopLog()
+    sentlog.info(f"Emotion 1", html_tag='h2')
+    sentlog.info(f"Model|<a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a>", html_tag='keyval')
     sentiments = []
-    i = 0
     for doc in docs:
         #print("doc: ", doc)
         sentiment = get_sentiment(classifier, doc)
-        
         if sentiment:
             sentiments.append(sentiment)
         else:
-            print("Error: sentiment is NoneType")
-
-        #if i % 100 == 0:
-        #    print("Processing 5-class: ", i)
-        i = i + 1
+            sentlog.warn("Sentiment is None type.")
     print_totals(sentiments)
     return globalutils.Sentiments("emotion1", f"Emotion1 ({model_name})", model_name, "emotion", sentiments)
 

@@ -5,6 +5,7 @@ offensive
 '''
 
 from globals import globalutils
+from globals import sentop_log
 
 model_name = "cardiffnlp/twitter-roberta-base-offensive"
 
@@ -48,7 +49,7 @@ def get_sentiment(classifier, text):
         return calc_sentiment(confidence_score)
 
 def print_totals(sentiments):
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
     notoffensive = 0
     offensive = 0
     for sentiment in sentiments:
@@ -57,30 +58,24 @@ def print_totals(sentiments):
         elif sentiment == 'offensive':
             offensive = offensive + 1
 
-    sentlog.append(f"<pre>")
-    sentlog.append(f"- Not Offensive: {notoffensive}")
-    sentlog.append(f"- Offesnive: {offensive}")
-    sentlog.append(f"</pre>")
+    sentlog.info(f"<pre>", html_tag='other')
+    sentlog.info(f"- Not Offensive: {notoffensive}", html_tag='p')
+    sentlog.info(f"- Offesnive: {offensive}", html_tag='p')
+    sentlog.info(f"</pre>", html_tag='other')
 
 
 def assess(classifier, docs):
-    sentlog = globalutils.SentopLog()
-    sentlog.append(f"<h2>Offensive</h2>\n")
-    sentlog.append(f"<b>Model: </b> <a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a><br>")
+    sentlog = sentop_log.SentopLog()
+    sentlog.info(f"Offensive", html_tag='h2')
+    sentlog.info(f"Model|<a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a>", html_tag='keyval')
     sentiments = []
-    i = 0
     for doc in docs:
         #print("doc: ", doc)
         sentiment = get_sentiment(classifier, doc)
-        
         if sentiment:
             sentiments.append(sentiment)
         else:
-            print("Error: sentiment is NoneType")
-
-        #if i % 100 == 0:
-        #    print("Processing 5-class: ", i)
-        i = i + 1
+            sentlog.warn("Sentiment is None type.")
     print_totals(sentiments)
     return globalutils.Sentiments("offensive1", f"Offensive ({model_name})", model_name, "offensive", sentiments)
 

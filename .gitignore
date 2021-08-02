@@ -3,7 +3,14 @@ notes.txt
 deploy-as-zip-to-azure.txt
 sentop_config.py
 hugginface_models_dont_work.txt
+<<<<<<< HEAD
 transformers/
+=======
+tokenizers/
+tokenizers/punkt/
+*.pickle
+settings.json
+>>>>>>> 455f702a2b4b611494e586c3da0830d3f327b2d3
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

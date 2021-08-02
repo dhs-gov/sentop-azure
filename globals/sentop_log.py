@@ -59,10 +59,37 @@ class SentopLog():
         print(text)
 
     def p(self, text):
+<<<<<<< HEAD
         html = f"{text}<br>"
         globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html + "\n"
         print(text)
 
+=======
+        html = f"{text}"
+        globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html + "\n"
+        print(text)
+
+    def other(self, text):
+        html = f"{text}"
+        globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html + "\n"
+        #print(text)
+
+    def keyval(self, text):
+        keyval_list = text.split('|')
+        if not keyval_list:
+            self.error("Did not find '|' char in keyval parameter'")
+            return
+
+        key = keyval_list[0]
+        val = keyval_list[1]
+        if not val:
+            val = ""
+        html = f"<b>&#8226; {key}:</b> {val}<br>"
+        globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html + "\n"
+        print(f"{key}: {val}")
+
+    '''
+>>>>>>> 455f702a2b4b611494e586c3da0830d3f327b2d3
     def append(self, text):
         html = f"{text}<br>"
         globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html + "\n"
@@ -98,24 +125,40 @@ class SentopLog():
 
     def error(self, text):
         if self.log_level <= 3:
+<<<<<<< HEAD
             html = f"<div style=\"font-weight: bold; color: red; \">&#8226; ERROR: {text} </div><br>"
+=======
+            html = f"<div style=\"font-weight: bold; color: red; \">&#8226; ERROR: {text} </div>"
+>>>>>>> 455f702a2b4b611494e586c3da0830d3f327b2d3
             globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html + "\n"
             print(text)
 
     def reset(self):
         print(">>>>>>>>>>>>>>>>>> S T A R T >>>>>>>>>>>>>>>>")
+<<<<<<< HEAD
         SENTOP_LOG = html_start
         html = "<br><br><div style=\"line-height: 110%; text-align: center; font-size: 30px; font-weight: bold;\">SENTOP</div>\n"
         SENTOP_LOG = SENTOP_LOG + html + "\n"
         html = "<div style=\"line-height: 160%; text-align: center; font-size: 18px;\"><a href=\"https://github.com/dhs-gov/sentop\" target=\"_blank\">github.com/dhs-gov/sentop</a></div>\n"
         SENTOP_LOG = SENTOP_LOG + html + "\n"
+=======
+        globalvars.SENTOP_LOG = html_start
+        html = "<br><br><div style=\"line-height: 110%; text-align: center; font-size: 30px; font-weight: bold;\">SENTOP</div>\n"
+        globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html + "\n"
+        html = "<div style=\"line-height: 160%; text-align: center; font-size: 18px;\"><a href=\"https://github.com/dhs-gov/sentop\" target=\"_blank\">github.com/dhs-gov/sentop</a></div>\n"
+        globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html + "\n"
+>>>>>>> 455f702a2b4b611494e586c3da0830d3f327b2d3
         from_zone = tz.gettz('UTC')
         to_zone = tz.gettz('America/New_York')
         utc = datetime.utcnow()
         utc = utc.replace(tzinfo=from_zone)
         central = utc.astimezone(to_zone)
         html = f"<div style=\"text-align: center; font-size: 16px;\">{central.strftime('%B %d %Y - %H:%M:%S')} EST</div><br>\n"
+<<<<<<< HEAD
         SENTOP_LOG = SENTOP_LOG + html + "\n"
+=======
+        globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html + "\n"
+>>>>>>> 455f702a2b4b611494e586c3da0830d3f327b2d3
 
     def write(self, id, output_dir_path):
         globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html_end + "\n"
@@ -126,6 +169,7 @@ class SentopLog():
 
     
 
+<<<<<<< HEAD
 
 def show_stack_trace(error_msg):
     #print("Error: ", error_msg)
@@ -137,4 +181,6 @@ def show_stack_trace(error_msg):
     sentlog.append(f"<div style=\"font-weight: bold; color: red; \">&#8226; ERROR! {exc_type, fname, exc_tb.tb_lineno, error_msg}.</div><br>")
 
 
+=======
+>>>>>>> 455f702a2b4b611494e586c3da0830d3f327b2d3
     

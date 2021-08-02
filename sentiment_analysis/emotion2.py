@@ -31,6 +31,7 @@ surprise
 '''
 
 from globals import globalutils
+from globals import sentop_log
 
 
 model_name = "monologg/bert-base-cased-goemotions-original"
@@ -74,7 +75,7 @@ def get_sentiment(classifier, text):
         return calc_sentiment(confidence_score)
 
 def print_totals(sentiments):
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
     admiration = 0
     amusement  = 0
     anger = 0
@@ -162,54 +163,48 @@ def print_totals(sentiments):
         elif sentiment == 'surprise':
             surprise = surprise + 1
 
-    sentlog.append(f"<pre>")
-    sentlog.append(f"- Admiration: {admiration}")
-    sentlog.append(f"- Amusement: {amusement}")
-    sentlog.append(f"- Anger: {anger}")
-    sentlog.append(f"- Annoyance: {annoyance}")
-    sentlog.append(f"- Approval: {approval}")
-    sentlog.append(f"- Caring: {caring}")
-    sentlog.append(f"- Confusion: {confusion}")
-    sentlog.append(f"- Curiosity: {curiosity}")
-    sentlog.append(f"- Desire: {desire}")
-    sentlog.append(f"- Dissapointment: {disappointment}")
-    sentlog.append(f"- Disapproval: {disapproval}")
-    sentlog.append(f"- Embarrassment: {embarrassment}")
-    sentlog.append(f"- Excitement: {excitement}")
-    sentlog.append(f"- Fear: {fear}")
-    sentlog.append(f"- Gratitude: {gratitude}")
-    sentlog.append(f"- Grief: {grief}")
-    sentlog.append(f"- Joy: {joy}")
-    sentlog.append(f"- Love: {love}")
-    sentlog.append(f"- Nervousness: {nervousness}")
-    sentlog.append(f"- Neutral: {neutral}")
-    sentlog.append(f"- Optimism: {optimism}")
-    sentlog.append(f"- Pride: {pride}")
-    sentlog.append(f"- Realization: {realization}")
-    sentlog.append(f"- Relief: {relief}")
-    sentlog.append(f"- Remorse: {remorse}")
-    sentlog.append(f"- Sadness: {sadness}")
-    sentlog.append(f"- Surprise: {surprise}")
-    sentlog.append(f"</pre>")
+    sentlog.info(f"<pre>", html_tag='other')
+    sentlog.info(f"- Admiration: {admiration}", html_tag='p')
+    sentlog.info(f"- Amusement: {amusement}", html_tag='p')
+    sentlog.info(f"- Anger: {anger}", html_tag='p')
+    sentlog.info(f"- Annoyance: {annoyance}", html_tag='p')
+    sentlog.info(f"- Approval: {approval}", html_tag='p')
+    sentlog.info(f"- Caring: {caring}", html_tag='p')
+    sentlog.info(f"- Confusion: {confusion}", html_tag='p')
+    sentlog.info(f"- Curiosity: {curiosity}", html_tag='p')
+    sentlog.info(f"- Desire: {desire}", html_tag='p')
+    sentlog.info(f"- Dissapointment: {disappointment}", html_tag='p')
+    sentlog.info(f"- Disapproval: {disapproval}", html_tag='p')
+    sentlog.info(f"- Embarrassment: {embarrassment}", html_tag='p')
+    sentlog.info(f"- Excitement: {excitement}", html_tag='p')
+    sentlog.info(f"- Fear: {fear}", html_tag='p')
+    sentlog.info(f"- Gratitude: {gratitude}", html_tag='p')
+    sentlog.info(f"- Grief: {grief}", html_tag='p')
+    sentlog.info(f"- Joy: {joy}", html_tag='p')
+    sentlog.info(f"- Love: {love}", html_tag='p')
+    sentlog.info(f"- Nervousness: {nervousness}", html_tag='p')
+    sentlog.info(f"- Neutral: {neutral}", html_tag='p')
+    sentlog.info(f"- Optimism: {optimism}", html_tag='p')
+    sentlog.info(f"- Pride: {pride}", html_tag='p')
+    sentlog.info(f"- Realization: {realization}", html_tag='p')
+    sentlog.info(f"- Relief: {relief}", html_tag='p')
+    sentlog.info(f"- Remorse: {remorse}", html_tag='p')
+    sentlog.info(f"- Sadness: {sadness}", html_tag='p')
+    sentlog.info(f"- Surprise: {surprise}", html_tag='p')
+    sentlog.info(f"</pre>", html_tag='other')
 
 
 def assess(classifier, docs):
-    sentlog = globalutils.SentopLog()
-    sentlog.append(f"<h2>Emotion 2</h2>\n")
-    sentlog.append(f"<b>Model: </b> <a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a><br>")
+    sentlog = sentop_log.SentopLog()
+    sentlog.info(f"Emotion 2", html_tag='h2')
+    sentlog.info(f"Model|<a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a>", html_tag='keyval')
     sentiments = []
-    i = 0
     for doc in docs:
         #print("doc: ", doc)
         sentiment = get_sentiment(classifier, doc)
-        
         if sentiment:
             sentiments.append(sentiment)
         else:
-            print("Error: sentiment is NoneType")
-
-        #if i % 100 == 0:
-        #    print("Processing 3-class: ", i)
-        i = i + 1
+            sentlog.warn("Sentiment is None type.")
     print_totals(sentiments)
     return globalutils.Sentiments("emotion2", f"Emotion2 ({model_name})", model_name, "emotion", sentiments)

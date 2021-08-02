@@ -7,6 +7,7 @@ positive
 
 from numpy import negative
 from globals import globalutils
+from globals import sentop_log
 
 
 model_name = "cardiffnlp/twitter-roberta-base-sentiment"
@@ -52,7 +53,7 @@ def get_sentiment(classifier, text):
         return calc_sentiment(confidence_score)
 
 def print_totals(sentiments):
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
     negative_num = 0
     neutral_num = 0
     positive_num = 0
@@ -64,29 +65,24 @@ def print_totals(sentiments):
         else:
             positive_num = positive_num + 1
 
-    sentlog.append(f"<pre>")
-    sentlog.append(f"- Negative: {negative_num}")
-    sentlog.append(f"- Neutral: {neutral_num}")
-    sentlog.append(f"- Positive: {positive_num}")
-    sentlog.append(f"</pre>")
+    sentlog.info(f"<pre>", html_tag='other')
+    sentlog.info(f"- Negative: {negative_num}", html_tag='p')
+    sentlog.info(f"- Neutral: {neutral_num}", html_tag='p')
+    sentlog.info(f"- Positive: {positive_num}", html_tag='p')
+    sentlog.info(f"</pre>", html_tag='other')
 
 def assess(classifier, docs):
-    sentlog = globalutils.SentopLog()
-    sentlog.append(f"<h2>3-Class Polarity</h2>")
-    sentlog.append(f"<b>Model:</b> <a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a><br>")
+    sentlog = sentop_log.SentopLog()
+    sentlog.info(f"3-Class Polarity", html_tag='h2')
+    sentlog.info(f"Model|<a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a>", html_tag='keyval')
     sentiments = []
-    i = 0
     for doc in docs:
         #print("doc: ", doc)
         sentiment = get_sentiment(classifier, doc)
-        
         if sentiment:
             sentiments.append(sentiment)
         else:
-            print("Error: sentiment is NoneType")
+            sentlog.warn("Sentiment is None type.")
 
-        #if i % 100 == 0:
-        #    print("Processing 3-class: ", i)
-        i = i + 1
     print_totals(sentiments)
     return globalutils.Sentiments("class3", f"3-Class ({model_name})", model_name, "polarity", sentiments)

@@ -9,6 +9,11 @@ database = {
       "password": "password"
 }
 
+data_dir_path = {
+      "input": "C:\\my\\http\\server\\input_directory",
+      "output": "C:\\my\\output_directory"
+}
+
 # Results generation. Here, JSON results are provided in the HTTP query
 # response.
 results = {

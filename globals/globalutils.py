@@ -1,6 +1,6 @@
 import os
 from contextlib import contextmanager,redirect_stderr,redirect_stdout
-from os import devnull, name
+from os import devnull
 import sys
 import logging
 import psutil
@@ -76,8 +76,19 @@ class TextChecker():
             text = text[0:globalvars.MAX_TOKENS]
         return text
 
+<<<<<<< HEAD
 
 
+=======
+def show_stack_trace(error_msg):
+    #print("Error: ", error_msg)
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    #print(exc_type, fname, exc_tb.tb_lineno)
+    sentlog = sentop_log.SentopLog()
+    #sentlog.append(f"ERROR! {exc_type, fname, exc_tb.tb_lineno, error_msg}<br>")
+    sentlog.error(f"{exc_type, fname, exc_tb.tb_lineno, error_msg}")
+>>>>>>> 455f702a2b4b611494e586c3da0830d3f327b2d3
 
 @contextmanager
 def suppress_stdout_stderr():
@@ -140,9 +151,12 @@ def get_sentiment(id, sentiments):
 
 def generate_excel(id, annotation, num_list, data_list, sentiment_results, bertopic_results, lda_results):
    
-    sentlog = SentopLog()
+    sentlog = sentop_log.SentopLog()
     try:
+<<<<<<< HEAD
 
+=======
+>>>>>>> 455f702a2b4b611494e586c3da0830d3f327b2d3
         bert_sentence_topics = bertopic_results.topic_per_row
         bert_topics = bertopic_results.topics_list
         bert_duplicate_words = bertopic_results.duplicate_words_across_topics
@@ -151,19 +165,9 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, berto
         lda_topics = lda_results.topics_list
         lda_duplicate_words = lda_results.duplicate_words_across_topics
 
-        # NOTE: data is a list of [id, text]
-        #num_list = column(data, 0)
-        #data_list = column(data, 1)
-
-        #input_dir_path = config.data_dir_path.get("input")
         output_dir_path = config.data_dir_path.get("output")
 
-        #for r in sentiment_results:
-        #    print(f"Got Exel id: {r.id}")
-        #    print(f"GOt Excel list: {r.data_list}")
-
         class3 = get_sentiment('class3', sentiment_results)
-        print(f"class3 type: {type(class3)}")
         class5 = get_sentiment('class5', sentiment_results)
         emotion1 = get_sentiment('emotion1', sentiment_results)
         offensive1 = get_sentiment('offensive1', sentiment_results) 
@@ -185,7 +189,6 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, berto
                 row_data.append(offensive1.data_list[i])
                 rows.append(row_data)
 
-
         # Create results XLSX
         wb = Workbook()
         xlsx_out = output_dir_path + "\\" + id + "_results.xlsx"
@@ -206,7 +209,6 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, berto
         ws1['F1'].fill = PatternFill(start_color='FF66FFFF', end_color='FF66FFFF', fill_type='solid')
         ws1['F1'].font = Font(bold=True)
 
-
         # Emotion sentiment columns
         ws1['G1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
         ws1['G1'].font = Font(bold=True)
@@ -218,7 +220,6 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, berto
         for i in range(len(rows)):
             ws1.append(rows[i])
 
-
         # Create Annotation XLSX sheet
         ws4 = wb.create_sheet(title="Annotation")
         fields = ['Annotation']
@@ -226,7 +227,10 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, berto
         annotation_list.append(annotation)
         ws4.append(annotation_list)
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 455f702a2b4b611494e586c3da0830d3f327b2d3
         # Create BERTopic topics data
         rows = []
         for i in range(len(bert_topics)):
@@ -237,13 +241,11 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, berto
                 row_data.append(float(bert_topics[i].weights[j]))
                 rows.append(row_data)
 
-
         # Create BERTopic topics data XLSX sheet
         ws2 = wb.create_sheet(title="BERTopic")
         ws2.append(['Topic', 'Top Words', 'Weight'])
         for i in range(len(rows)):
             ws2.append(rows[i])
-
 
         # Create BERTopic non-overlapping topic words data
         rows = []
@@ -256,13 +258,11 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, berto
                     row_data.append(float(bert_topics[i].weights[j]))
                     rows.append(row_data)
 
-
         # Create BERTopic non-overlapping topics data XLSX sheet
         ws2 = wb.create_sheet(title="BERTopic Non-Overlapping Topics")
         ws2.append(['Topic', 'Top Words', 'Weight'])
         for i in range(len(rows)):
             ws2.append(rows[i])  
-
 
         # Create LDA topics data
         rows = []
@@ -276,14 +276,12 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, berto
                 row_data.append(float(lda_topics[i].weights[j]))
                 rows.append(row_data)
 
-
         # Create LDA topics data XLSX sheet
         ws3 = wb.create_sheet(title="LDA")
         fields = ['Topic', 'Top Words', 'Weight']
         ws3.append(fields)
         for i in range(len(rows)):
             ws3.append(rows[i])
-
 
         # Create LDA non-overlapping topics words data
         rows = []
