@@ -2,7 +2,7 @@ from globals import globalvars
 from globals import globalutils
 import re
 
-# Clean and remove stop words for topic modeling: LDA, Top2Vec. 
+# Clean and remove stop words for topic modeling: LDA. 
 def topic_modeling_clean_stop(data_list, stop_words):
 
     cleaned = []

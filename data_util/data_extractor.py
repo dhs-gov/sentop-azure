@@ -105,7 +105,7 @@ def get_xlsx_data(bytes):
                         break
 
         if not id_column:
-            sentlog.append("<div style=\"color: #e97e16; font-weight: bold; \">&#8226; Warning:  1 with color #FF0000 in XLSX file. Will use row number as ID.</div>")
+            sentlog.append("<div style=\"color: #e97e16; font-weight: bold; \">&#8226; Warning: No header cell with color #FF0000 in XLSX file. Will use row number as ID.</div>")
         else:
             sentlog.append(f"<b>&#8226; Found data ID column:</b> {id_column}<br>")
 
@@ -117,6 +117,7 @@ def get_xlsx_data(bytes):
         row_num = 0
         data_list = []
         data_id = None
+        found_data = False
         for row in ws.iter_rows():
             row_num = row_num + 1
             col_num = 0
@@ -137,7 +138,11 @@ def get_xlsx_data(bytes):
                         color_in_hex = color_in_hex[2:]
                         #print(f"{cell_address}: {color_in_hex}")
                         if color_in_hex == 'FFFF00':  # Yellow
-                            print(f"Found data cell: {cell_address}")
+                            #print(f"Found data cell: {cell_address}")
+                            if not found_data:
+                                found_data = True
+                                print("Found highlighted data.")
+
                             val = col_cell.value
 
                             if not val:

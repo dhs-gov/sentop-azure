@@ -3,7 +3,6 @@ from collections import Counter
 from adaptnlp import EasySequenceClassifier
 from topic_modeling import topmod_bertopic
 from topic_modeling import lda_tomotopy
-#from topic_modeling import top2vec
 from sentiment_analysis import class3 
 from sentiment_analysis import class5 
 from sentiment_analysis import emotion1 
@@ -115,23 +114,6 @@ def main(name: object) -> json:
     sentlog.append("<hr>")
     sentlog.append("<h1>Topic Modeling</h1>\n")
 
-    '''
-    # -------------------------------- Top2Vec ---------------------------------
-    # Perform Top2Vec
-    sentlog.append("<h2>Top2Vec</h2>\n")
-    sentlog.append("<b>&#8226; URL: </b><a href=\"https://github.com/ddangelov/Top2Vec\">https://github.com/ddangelov/Top2Vec</a><br>")
-    top2vec_results, t2v_error = top2vec.get_topics(data_list, all_stop_words)
-    if t2v_error:
-        sentlog.append(f"ERROR! {top2vec_results}.\n")
-    elif top2vec_results.topics_list:
-        #sentlog.append("Num top2vec topics: ", len(bert_topics))
-        #sentlog.append(f"Top2vec topics {top2vec_results}.\n")
-        db = postgres.Database()
-        db.create_top2vec_table(sentop_id, top2vec_results.topics_list)
-        db.create_top2vec_nooverlap_table(sentop_id, top2vec_results.topics_list, top2vec_results.duplicate_words_across_topics)
-    else:
-        sentlog.append(f"ERROR! No Top2Vec topics could be generated.\n")
-    '''
     # ---------------------------------- LDA -----------------------------------
  
     sentlog.append("<h2>Tomotopy (LDA)</h2>\n")

@@ -15,6 +15,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Color, PatternFill, Font, Border
 from openpyxl.styles import colors
 from openpyxl.cell import Cell
+from dateutil import tz
 
 class Sentiments:
     def __init__(self, id, name, model_name, type, data_list):
@@ -75,55 +76,8 @@ class TextChecker():
             text = text[0:globalvars.MAX_TOKENS]
         return text
 
-html_start = """<html>\n 
-             <head>
-             <style>
-                body {line-height: 140%;}
-                h1 {font-size: 24px; font-weight: bold; color: #235668;}
-                h2 {font-size: 20px; font-weight: bold; color: #5498b0;}
-                h3 {font-size: 16px; font-weight: bold; color: brown;}
-                pre {font-size: 14px;}
-                p    {color: red;}
-                b {color: #525252;}
-                hr {color: silver}
-</style>
-             
-             </head>\n
-             <body style=\"font-family: arial; \">\n
-             """
-html_end = """</body>\n
-             </html>
-             """
-
-class SentopLog():
-    def __init__(self):
-        self.id = html_start
-
-    def append(self, text):
-        globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + text + "\n"
-        print(text)
-
-    def clear(self):
-        globalvars.SENTOP_LOG = html_start
-
-    def write(self, id, output_dir_path):
-        globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html_end + "\n"
-        log_out = output_dir_path + "\\" + id + "_log.html"
-        f= open(log_out,"w+")
-        f.write(globalvars.SENTOP_LOG)
-        f.close
-
-    
 
 
-def show_stack_trace(error_msg):
-    #print("Error: ", error_msg)
-    exc_type, exc_obj, exc_tb = sys.exc_info()
-    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    #print(exc_type, fname, exc_tb.tb_lineno)
-    sentlog = SentopLog()
-    #sentlog.append(f"ERROR! {exc_type, fname, exc_tb.tb_lineno, error_msg}<br>")
-    sentlog.append(f"<div style=\"font-weight: bold; color: red; \">&#8226; ERROR! {exc_type, fname, exc_tb.tb_lineno, error_msg}.</div><br>")
 
 @contextmanager
 def suppress_stdout_stderr():
@@ -189,10 +143,6 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, berto
     sentlog = SentopLog()
     try:
 
-        #top2vec_sentence_topics = top2vec_results.topic_per_row
-        #top2vec_topics = top2vec_results.topics_list
-        #top2vec_duplicate_words = top2vec_results.duplicate_words_across_topics
-
         bert_sentence_topics = bertopic_results.topic_per_row
         bert_topics = bertopic_results.topics_list
         bert_duplicate_words = bertopic_results.duplicate_words_across_topics
@@ -228,7 +178,6 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, berto
                 row_data.append(data_list[i])
                 row_data.append(bert_sentence_topics[i])
                 row_data.append(lda_sentence_topics[i])
-                #row_data.append(top2vec_sentence_topics[i])
                 row_data.append(class3.data_list[i])
                 row_data.append(class5.data_list[i])
                 row_data.append(emotion1.data_list[i])
@@ -242,7 +191,7 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, berto
         xlsx_out = output_dir_path + "\\" + id + "_results.xlsx"
         ws1 = wb.active
         ws1.title = "Results"
-        ws1.append(['ID', 'Document', 'BERTopic Topic', 'LDA Topic', 'Top2Vec', class3.name, class5.name, emotion1.name, emotion2.name, offensive1.name])
+        ws1.append(['ID', 'Document', 'BERTopic Topic', 'LDA Topic', class3.name, class5.name, emotion1.name, emotion2.name, offensive1.name])
         ws1['A1'].font = Font(bold=True)
         ws1['B1'].font = Font(bold=True)
         # Topic columns
@@ -277,43 +226,6 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, berto
         annotation_list.append(annotation)
         ws4.append(annotation_list)
 
-        '''
-        # Create Top2Vec topics data
-        rows = []
-        for i in range(len(top2vec_topics)):
-            for j in range(len(top2vec_topics[i].words)):
-                row_data = []
-                row_data.append(top2vec_topics[i].topic_num)
-                row_data.append(top2vec_topics[i].words[j])
-                row_data.append(float(top2vec_topics[i].weights[j]))
-                rows.append(row_data)
-
-
-        # Create Top2Vec topics data XLSX sheet
-        ws5 = wb.create_sheet(title="Top2Vec")
-        ws5.append(['Topic', 'Top Words', 'Weight'])
-        for i in range(len(rows)):
-            ws5.append(rows[i])
-
-
-        # Create Top2Vec non-overlapping topic words data
-        rows = []
-        for i in range(len(top2vec_topics)):
-            for j in range(len(top2vec_topics[i].words)):
-                if not top2vec_topics[i].words[j] in top2vec_duplicate_words:
-                    row_data = []
-                    row_data.append(top2vec_topics[i].topic_num)
-                    row_data.append(top2vec_topics[i].words[j])
-                    row_data.append(float(top2vec_topics[i].weights[j]))
-                    rows.append(row_data)
-
-
-        # Create Top2Vec non-overlapping topics data XLSX sheet
-        ws5 = wb.create_sheet(title="Top2Vec Non-Overlapping Topics")
-        ws5.append(['Topic', 'Top Words', 'Weight'])
-        for i in range(len(rows)):
-            ws5.append(rows[i])  
-        '''
 
         # Create BERTopic topics data
         rows = []

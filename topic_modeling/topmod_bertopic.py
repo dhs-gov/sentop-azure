@@ -134,6 +134,9 @@ def get_best_model_name(rows, all_stop_words):
 
         topic_per_row = None
         try:
+            # IMPORTANT! The following can lead to 'int too big to convert'
+            # errors. To fix, set self.tokenizer.model_max_length = 512
+            # in .venv/Lib/site-packages/flair/embeddings/document.py: line 59.
             topic_per_row, probs = topic_model.fit_transform(rows)
             #print("BERTopic topics: %s", topic_per_row)
             #print("BERTopic PROBS: %s", probs)
@@ -141,8 +144,8 @@ def get_best_model_name(rows, all_stop_words):
                 # Topics could not be generated
                 sentlog.append(f"<div style=\"font-weight: bold; color: #e97e16; \">&#8226; WARNING! Could not generate topics using model {model_name}.</div><br>")
                 continue
-        except ValueError:  #raised if `y` is empty.
-            globalutils.show_stack_trace("BERTopic could not generate topics or probabilities.")
+        except Exception as e:  #raised if `y` is empty.
+            globalutils.show_stack_trace(f"BERTopic could not generate topics or probabilities with model {model_name}: {str(e)}.")
             continue
 
         #print(f"Num topics per rows: {len(topic_per_row)}")

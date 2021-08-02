@@ -6,6 +6,7 @@ from data_util import data_extractor
 from data_util import data_cleaner
 from database import postgres
 from globals import globalutils
+from globals import sentop_log
 from datetime import datetime
 from dateutil import tz
 import sentop_config as config
@@ -21,7 +22,7 @@ class DataIn:
         self.annotation = annotation
             
 
-# Returns SENTOP ID based on current timestamp.
+# Returns SENTOP ID generated from current timestamp.
 def get_sentop_id():
     import datetime
     milliseconds_since_epoch = datetime.datetime.now().timestamp() * 1000
@@ -30,7 +31,7 @@ def get_sentop_id():
 
 # Returns id, file_url, is_test, error
 def check_query_params(req):
-    sentlog = globalutils.SentopLog()
+    sentlog = sentop_log.SentopLog()
 
     valid_endpoint_namesnames = ['sentop', 'sentop-test']
     endpoint_name = req.route_params.get('functionName')
@@ -60,18 +61,10 @@ def check_query_params(req):
 
 async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
 
-    sentlog = globalutils.SentopLog()
-    sentlog.clear()
+    sentlog = sentop_log.SentopLog()
+    sentlog.reset()
+    sentlog.set_level('DEBUG')
 
-    print(">>>>>>>>>>>>>>>>>> S T A R T >>>>>>>>>>>>>>>>")
-    sentlog.append("<br><br><div style=\"line-height: 110%; text-align: center; font-size: 30px; font-weight: bold;\">SENTOP</div>\n")
-    sentlog.append("<div style=\"line-height: 160%; text-align: center; font-size: 18px;\"><a href=\"https://github.com/dhs-gov/sentop\" target=\"_blank\">github.com/dhs-gov/sentop</a></div>\n")
-    from_zone = tz.gettz('UTC')
-    to_zone = tz.gettz('America/New_York')
-    utc = datetime.utcnow()
-    utc = utc.replace(tzinfo=from_zone)
-    central = utc.astimezone(to_zone)
-    sentlog.append(f"<div style=\"text-align: center; font-size: 16px;\">{central.strftime('%B %d %Y - %H:%M:%S')} EST</div><br>\n")
 
     # ---------------------------- SET LOGGING ---------------------------------
 
@@ -118,21 +111,20 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
     instances = await client.get_status_all()
     for instance in instances:
         if instance:
-            sentlog.append(f"<div style=\"font-weight: bold; color: #e97e16; \">&#8226; WARNING! Old instance still alive.</div><br>")
+            sentlog.warn(f"Old instance still alive.")
 
 
    # -------------------------- CHECK QUERY PARAMS -----------------------------
 
-    sentlog.append("<br><br>")
-    sentlog.append("<h1>Request</h1>\n")
+    sentlog.h1("Request")
 
     sentop_id, kms_id, is_test, error = check_query_params(req)
     if error:
-        sentlog.append(f"<div style=\"font-weight: bold; color: red; \">&#8226; {error}</div><br>")
+        sentlog.error(f"{error}")
         sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse(error, status_code=400)
     if is_test:
-        sentlog.append("Test request successful.")
+        sentlog.info("Test request successful.")
         sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse("SENTOP test successful.", status_code=200)
 
@@ -140,15 +132,15 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
     #if kms_id.startswith('http'):
     #    kms_id = f"<a href=\\\"{kms_id}\\\" target=\\\"_blank\\\">{kms_id}</a>"
 
-    sentlog.append(f"<b>&#8226; KMS ID:</b> {kms_id}<br>")
-    sentlog.append(f"<b>&#8226; SENTOP ID:</b> {sentop_id}")
+    sentlog.info(f"<b>&#8226; KMS ID:</b> {kms_id}", html_tag='p')
+    sentlog.info(f"<b>&#8226; SENTOP ID:</b> {sentop_id}", html_tag='p')
 
    # ---------------------- SAVE REQUEST DATA TO DB ----------------------------
 
     db = postgres.Database()
     error = db.add_submission(sentop_id, kms_id)
     if error:
-        sentlog.append(f"<div style=\"font-weight: bold; color: red; \">&#8226; {error}</div><br>")
+        sentlog.error(f"{error}")
         sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse(error, status_code=400)
 
