@@ -60,7 +60,7 @@ def print_totals(sentiments):
 
     sentlog.info(f"<pre>", html_tag='other')
     sentlog.info(f"- Not Offensive: {notoffensive}", html_tag='p')
-    sentlog.info(f"- Offesnive: {offensive}", html_tag='p')
+    sentlog.info(f"- Offensive: {offensive}", html_tag='p')
     sentlog.info(f"</pre>", html_tag='other')
 
 
