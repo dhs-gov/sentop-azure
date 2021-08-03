@@ -52,7 +52,7 @@ Sentiment analysis is performed using [AdaptNLP](https://github.com/Novetta/adap
     - emorse
     - sadness
     - surprise 
-5. [Twitter roBERTa-base for Offensive Language Identification](https://huggingface.co/cardiffnlp/twitter-roberta-base-offensive):
+5. [Twitter roBERTa-base for Offensive Language Identification](https://huggingface.co/cardiffnlp/twitter-roberta-base-offensive) for 2-class offensive language detection:
     - offensive
     - not-offensive
 
