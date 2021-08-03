@@ -295,8 +295,7 @@ class Database:
     # -------------------------------- RESULTS ----------------------------------
 
     def create_result_table(self, id, id_list, data_list, sentiment_results, bertopic_results, lda_results):
-        sentlog = globalutils.SentopLog() 
-
+        sentlog = sentop_log.SentopLog() 
         bert_sentence_topics = bertopic_results.topic_per_row
         lda_sentence_topics = lda_results.topic_per_row
         tablename = str(id) + self.results_table_suffix
