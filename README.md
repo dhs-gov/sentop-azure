@@ -12,18 +12,18 @@ Sentiment analysis is performed using [AdaptNLP](https://github.com/Novetta/adap
     - negative  
     - neutral
     - positive
-2. [BERT Base Multilingual Uncased Sentiment](https://huggingface.co/nlptown/bert-base-multilingual-uncased-sentiment) -- based on Google's [Bidirectional Encoder Representations from Transformers (BERT)](https://en.wikipedia.org/wiki/BERT_(language_model))
+2. [BERT Base Multilingual Uncased Sentiment](https://huggingface.co/nlptown/bert-base-multilingual-uncased-sentiment) for 5-class sentiment -- based on Google's [Bidirectional Encoder Representations from Transformers (BERT)](https://en.wikipedia.org/wiki/BERT_(language_model))
     - 1 star
     - 2 stars
     - 3 stars
     - 4 stars
     - 5 stars
-3. [Twitter roBERTa-base for Emotion Recognition](https://huggingface.co/cardiffnlp/twitter-roberta-base-emotion):
+3. [Twitter roBERTa-base for Emotion Recognition](https://huggingface.co/cardiffnlp/twitter-roberta-base-emotion) for 4-class emotion recognition:
     - joy
     - optimism
     - anger
     - sadness
-4. [BERT-base-cased Geomotions (Original)](https://huggingface.co/monologg/bert-base-cased-goemotions-original):
+4. [BERT-base-cased Geomotions (Original)](https://huggingface.co/monologg/bert-base-cased-goemotions-original) for 28-class emotion recognition:
     - admiration
     - amusement 
     - anger
