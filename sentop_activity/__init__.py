@@ -60,6 +60,7 @@ class Response:
         self.results_filename = sentop_id + "_results.xlsx"
         self.log_filename = sentop_id + "_log.txt"
 
+
 # ================================== M A I N ===================================
 
 # Here, 'name' is the incoming data_in payload.
@@ -86,8 +87,8 @@ def main(name: object) -> json:
 
     # ============================= TOPIC MODELING =============================
    
-    sentlog.append("<hr>")
-    sentlog.append("<h1>Topic Modeling</h1>\n")
+    sentlog.info("<hr>", html_tag='other')
+    sentlog.info("Topic Modeling", html_tag='h1')
 
     # ---------------------------------- LDA -----------------------------------
  

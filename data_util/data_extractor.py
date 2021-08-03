@@ -10,6 +10,7 @@ import urllib3
 from openpyxl.utils import get_column_letter
 from . import data_cleaner
 
+
 # Return data, error, stop_words
 def get_json_payload(json_obj):
     sentlog = sentop_log.SentopLog()

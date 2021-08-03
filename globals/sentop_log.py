@@ -59,12 +59,6 @@ class SentopLog():
         print(text)
 
     def p(self, text):
-<<<<<<< HEAD
-        html = f"{text}<br>"
-        globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html + "\n"
-        print(text)
-
-=======
         html = f"{text}"
         globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html + "\n"
         print(text)
@@ -89,76 +83,60 @@ class SentopLog():
         print(f"{key}: {val}")
 
     '''
->>>>>>> 455f702a2b4b611494e586c3da0830d3f327b2d3
     def append(self, text):
         html = f"{text}<br>"
         globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html + "\n"
         print(text)
+    '''
+
+    def write_tag(self, text, html_tag):
+        if html_tag == 'h1' or html_tag == 'H1':
+            self.h1(text)
+        elif html_tag == 'h2' or html_tag == 'H2':
+            self.h2(text)
+        elif html_tag == 'h3' or html_tag == 'H3':
+            self.h3(text)
+        elif html_tag == 'p' or html_tag == 'P':
+            self.p(text)
+        elif html_tag == 'other':
+            self.other(text)
+        elif html_tag == 'keyval':
+            self.keyval(text)
 
     def debug(self, text, html_tag):
         if self.log_level == 0:
-            if html_tag == 'h1' or html_tag == 'H1':
-                self.h1(text)
-            elif html_tag == 'h2' or html_tag == 'H2':
-                self.h2(text)
-            elif html_tag == 'h3' or html_tag == 'H3':
-                self.h3(text)
-            elif html_tag == 'p' or html_tag == 'P':
-                self.p(text)
+            self.write_tag(text, html_tag)
 
     def info(self, text, html_tag):
         if self.log_level <= 1:
-            if html_tag == 'h1' or html_tag == 'H1':
-                self.h1(text)
-            elif html_tag == 'h2' or html_tag == 'H2':
-                self.h2(text)
-            elif html_tag == 'h3' or html_tag == 'H3':
-                self.h3(text)
-            elif html_tag == 'p' or html_tag == 'P':
-                self.p(text)
+            self.write_tag(text, html_tag)
 
     def warn(self, text):
         if self.log_level <= 2:
-            html = f"<div style=\"font-weight: bold; color: #e97e16; \">&#8226; WARNING: {text} </div><br>"
+            html = f"<div style=\"font-weight: bold; color: #e97e16; \">&#8226; WARNING: {text} </div>"
             globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html + "\n"
             print(text)
 
     def error(self, text):
         if self.log_level <= 3:
-<<<<<<< HEAD
-            html = f"<div style=\"font-weight: bold; color: red; \">&#8226; ERROR: {text} </div><br>"
-=======
             html = f"<div style=\"font-weight: bold; color: red; \">&#8226; ERROR: {text} </div>"
->>>>>>> 455f702a2b4b611494e586c3da0830d3f327b2d3
             globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html + "\n"
             print(text)
 
     def reset(self):
         print(">>>>>>>>>>>>>>>>>> S T A R T >>>>>>>>>>>>>>>>")
-<<<<<<< HEAD
-        SENTOP_LOG = html_start
-        html = "<br><br><div style=\"line-height: 110%; text-align: center; font-size: 30px; font-weight: bold;\">SENTOP</div>\n"
-        SENTOP_LOG = SENTOP_LOG + html + "\n"
-        html = "<div style=\"line-height: 160%; text-align: center; font-size: 18px;\"><a href=\"https://github.com/dhs-gov/sentop\" target=\"_blank\">github.com/dhs-gov/sentop</a></div>\n"
-        SENTOP_LOG = SENTOP_LOG + html + "\n"
-=======
         globalvars.SENTOP_LOG = html_start
         html = "<br><br><div style=\"line-height: 110%; text-align: center; font-size: 30px; font-weight: bold;\">SENTOP</div>\n"
         globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html + "\n"
         html = "<div style=\"line-height: 160%; text-align: center; font-size: 18px;\"><a href=\"https://github.com/dhs-gov/sentop\" target=\"_blank\">github.com/dhs-gov/sentop</a></div>\n"
         globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html + "\n"
->>>>>>> 455f702a2b4b611494e586c3da0830d3f327b2d3
         from_zone = tz.gettz('UTC')
         to_zone = tz.gettz('America/New_York')
         utc = datetime.utcnow()
         utc = utc.replace(tzinfo=from_zone)
         central = utc.astimezone(to_zone)
         html = f"<div style=\"text-align: center; font-size: 16px;\">{central.strftime('%B %d %Y - %H:%M:%S')} EST</div><br>\n"
-<<<<<<< HEAD
-        SENTOP_LOG = SENTOP_LOG + html + "\n"
-=======
         globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html + "\n"
->>>>>>> 455f702a2b4b611494e586c3da0830d3f327b2d3
 
     def write(self, id, output_dir_path):
         globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html_end + "\n"
@@ -169,18 +147,4 @@ class SentopLog():
 
     
 
-<<<<<<< HEAD
-
-def show_stack_trace(error_msg):
-    #print("Error: ", error_msg)
-    exc_type, exc_obj, exc_tb = sys.exc_info()
-    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    #print(exc_type, fname, exc_tb.tb_lineno)
-    sentlog = SentopLog()
-    #sentlog.append(f"ERROR! {exc_type, fname, exc_tb.tb_lineno, error_msg}<br>")
-    sentlog.append(f"<div style=\"font-weight: bold; color: red; \">&#8226; ERROR! {exc_type, fname, exc_tb.tb_lineno, error_msg}.</div><br>")
-
-
-=======
->>>>>>> 455f702a2b4b611494e586c3da0830d3f327b2d3
     

@@ -115,12 +115,7 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
     instances = await client.get_status_all()
     for instance in instances:
         if instance:
-<<<<<<< HEAD
-            sentlog.warn(f"Old instance still alive.")
-
-=======
             sentlog.warn(f"Old Azure instance still alive.")
->>>>>>> 455f702a2b4b611494e586c3da0830d3f327b2d3
 
    # -------------------------- CHECK QUERY PARAMS -----------------------------
 
@@ -132,25 +127,12 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
         sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse(error, status_code=400)
     if is_test:
-<<<<<<< HEAD
-        sentlog.info("Test request successful.")
-        sentlog.write(sentop_id, config.data_dir_path.get("output"))
-        return func.HttpResponse("SENTOP test successful.", status_code=200)
-
-
-    #if kms_id.startswith('http'):
-    #    kms_id = f"<a href=\\\"{kms_id}\\\" target=\\\"_blank\\\">{kms_id}</a>"
-
-    sentlog.info(f"<b>&#8226; KMS ID:</b> {kms_id}", html_tag='p')
-    sentlog.info(f"<b>&#8226; SENTOP ID:</b> {sentop_id}", html_tag='p')
-=======
         sentlog.info("Test request successful.", html_tag='p')
         sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse("SENTOP test successful.", status_code=200)
 
     sentlog.info(f"KMS ID|{kms_id}", html_tag='keyval')
     sentlog.info(f"SENTOP ID|{sentop_id}", html_tag='keyval')
->>>>>>> 455f702a2b4b611494e586c3da0830d3f327b2d3
 
    # ---------------------- SAVE REQUEST DATA TO DB ----------------------------
 

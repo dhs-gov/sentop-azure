@@ -12,10 +12,8 @@ import nltk
 from nltk.tokenize import word_tokenize
 import string
 from openpyxl import Workbook
-from openpyxl.styles import Color, PatternFill, Font, Border
-from openpyxl.styles import colors
-from openpyxl.cell import Cell
-from dateutil import tz
+from openpyxl.styles import PatternFill, Font
+from . import sentop_log
 
 class Sentiments:
     def __init__(self, id, name, model_name, type, data_list):
@@ -76,8 +74,14 @@ class TextChecker():
             text = text[0:globalvars.MAX_TOKENS]
         return text
 
-
-
+def show_stack_trace(error_msg):
+    #print("Error: ", error_msg)
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    #print(exc_type, fname, exc_tb.tb_lineno)
+    sentlog = sentop_log.SentopLog()
+    #sentlog.append(f"ERROR! {exc_type, fname, exc_tb.tb_lineno, error_msg}<br>")
+    sentlog.error(f"{exc_type, fname, exc_tb.tb_lineno, error_msg}")
 
 @contextmanager
 def suppress_stdout_stderr():
