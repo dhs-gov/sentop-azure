@@ -6,11 +6,55 @@ SENTOP combines sentiment analysis and topic modeling into a single capability a
 
 ## Sentiment Analysis
 
-Sentiment analysis is performed using [AdaptNLP](https://github.com/Novetta/adaptnlp) with state-of-the-art (SOTA) [Hugging Face Transformers](https://github.com/huggingface/transformers).  SENTOP uses two separate transformers to provide two types of sentiment analysis:
+Sentiment analysis is performed using [AdaptNLP](https://github.com/Novetta/adaptnlp) with state-of-the-art (SOTA) [Hugging Face Transformers](https://github.com/huggingface/transformers).  SENTOP provides multiple sentiment analyses (confidence scores also available):
 
-1. [RoBERTa Base Sentiment](https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment) for 3-class sentiment (negative, neutral, positive) -- based on Facebook AI's [RoBERTa](https://ai.facebook.com/blog/roberta-an-optimized-method-for-pretraining-self-supervised-nlp-systems/)
-2. [BERT Base Multilingual Uncased Sentiment](https://huggingface.co/nlptown/bert-base-multilingual-uncased-sentiment) for 5-star sentiment (1 star, 2 stars, ..., 5 stars) -- based on Google's [Bidirectional Encoder Representations from Transformers (BERT)](https://en.wikipedia.org/wiki/BERT_(language_model))
-
+1. [RoBERTa Base Sentiment](https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment) for 3-class sentiment -- based on Facebook AI's [RoBERTa](https://ai.facebook.com/blog/roberta-an-optimized-method-for-pretraining-self-supervised-nlp-systems/):
+    - negative  
+    - neutral
+    - positive
+2. [BERT Base Multilingual Uncased Sentiment](https://huggingface.co/nlptown/bert-base-multilingual-uncased-sentiment) -- based on Google's [Bidirectional Encoder Representations from Transformers (BERT)](https://en.wikipedia.org/wiki/BERT_(language_model))
+    - 1 star
+    - 2 stars
+    - 3 stars
+    - 4 stars
+    - 5 stars
+3. [Twitter roBERTa-base for Emotion Recognition](https://huggingface.co/cardiffnlp/twitter-roberta-base-emotion):
+    - joy
+    - optimism
+    - anger
+    - sadness
+4. [BERT-base-cased Geomotions (Original)](https://huggingface.co/monologg/bert-base-cased-goemotions-original):
+    - admiration
+    - amusement 
+    - anger
+    - annoyance 
+    - approval 
+    - caring
+    - confusion 
+    - curiosity 
+    - desire
+    - disappointment
+    - disapproval
+    - disgust
+    - embarrassment   
+    - excitement
+    - fear
+    - gratitude 
+    - grief
+    - joy
+    - love
+    - nervousness
+    - neutral     
+    - optimism  
+    - pride
+    - realization
+    - relief
+    - emorse
+    - sadness
+    - surprise 
+5. [Twitter roBERTa-base for Offensive Language Identification](https://huggingface.co/cardiffnlp/twitter-roberta-base-offensive):
+    - offensive
+    - not-offensive
 
 ## Topic Modeling
 
