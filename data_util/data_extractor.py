@@ -103,7 +103,7 @@ def get_xlsx_data(bytes):
                         break
 
         if not id_column:
-            sentlog.append("<div style=\"color: #e97e16; font-weight: bold; \">&#8226; Warning: No header cell with color #FF0000 in XLSX file. Will use row number as ID.</div>")
+            sentlog.warn("No header cell with color #FF0000 in XLSX file. Will use row number as ID.")
         else:
             sentlog.info(f"<b>&#8226; Found data ID column:</b> {id_column}<br>", html_tag='p')
 
