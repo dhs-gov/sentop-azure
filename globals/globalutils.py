@@ -76,19 +76,8 @@ class TextChecker():
             text = text[0:globalvars.MAX_TOKENS]
         return text
 
-<<<<<<< HEAD
 
 
-=======
-def show_stack_trace(error_msg):
-    #print("Error: ", error_msg)
-    exc_type, exc_obj, exc_tb = sys.exc_info()
-    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    #print(exc_type, fname, exc_tb.tb_lineno)
-    sentlog = sentop_log.SentopLog()
-    #sentlog.append(f"ERROR! {exc_type, fname, exc_tb.tb_lineno, error_msg}<br>")
-    sentlog.error(f"{exc_type, fname, exc_tb.tb_lineno, error_msg}")
->>>>>>> 455f702a2b4b611494e586c3da0830d3f327b2d3
 
 @contextmanager
 def suppress_stdout_stderr():
@@ -153,10 +142,6 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, berto
    
     sentlog = sentop_log.SentopLog()
     try:
-<<<<<<< HEAD
-
-=======
->>>>>>> 455f702a2b4b611494e586c3da0830d3f327b2d3
         bert_sentence_topics = bertopic_results.topic_per_row
         bert_topics = bertopic_results.topics_list
         bert_duplicate_words = bertopic_results.duplicate_words_across_topics
@@ -227,10 +212,6 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, berto
         annotation_list.append(annotation)
         ws4.append(annotation_list)
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 455f702a2b4b611494e586c3da0830d3f327b2d3
         # Create BERTopic topics data
         rows = []
         for i in range(len(bert_topics)):
