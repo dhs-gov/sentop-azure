@@ -296,8 +296,14 @@ class Database:
 
     def create_result_table(self, id, id_list, data_list, sentiment_results, bertopic_results, lda_results):
         sentlog = sentop_log.SentopLog() 
-        bert_sentence_topics = bertopic_results.topic_per_row
-        lda_sentence_topics = lda_results.topic_per_row
+
+
+        bert_sentence_topics = None
+        if bertopic_results:
+            bert_sentence_topics = bertopic_results.topic_per_row
+        lda_sentence_topics = None
+        if lda_results:
+            lda_sentence_topics = lda_results.topic_per_row
         tablename = str(id) + self.results_table_suffix
         self.open_connection()
         if self.table_exists(tablename):
@@ -319,9 +325,14 @@ class Database:
                 bert_topic = None
                 if bert_sentence_topics:
                     bert_topic = bert_sentence_topics[i]
+                else:
+                    bert_topic = "N/A"
+
                 lda_topic = None
                 if lda_sentence_topics:
                     lda_topic = lda_sentence_topics[i]
+                else:
+                    lda_topic = "N/A"
 
                 if (data_list[i]):
                     stmt = ("INSERT INTO " + tablename + "(num, document, class3, class5, emotion1, emotion2, offensive1, lda, bertopic) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)")
