@@ -90,6 +90,8 @@ class SentopLog():
     '''
 
     def write_tag(self, text, html_tag):
+        if html_tag == None:
+            print("Error: Missing html_tag for SentopLog.write_tag().")
         if html_tag == 'h1' or html_tag == 'H1':
             self.h1(text)
         elif html_tag == 'h2' or html_tag == 'H2':
@@ -104,10 +106,14 @@ class SentopLog():
             self.keyval(text)
 
     def debug(self, text, html_tag):
+        if html_tag == None:
+            print("Error: Missing html_tag for SentopLog.debug()")
         if self.log_level == 0:
             self.write_tag(text, html_tag)
 
     def info(self, text, html_tag):
+        if html_tag == None:
+            print("Error: Missing html_tag for SentopLog.info()")
         if self.log_level <= 1:
             self.write_tag(text, html_tag)
 
