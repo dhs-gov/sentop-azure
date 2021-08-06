@@ -164,7 +164,7 @@ def remove_invalid_datapoints(row_id_list, data_list, all_stop_words):
     if num_docs_ignored > 0:
         sentlog.info(f"- WARNING: {num_docs_ignored} ({perc}%) total non-blank docs removed.", html_tag='p')
     else:
-        sentlog.info(f"- {num_docs_ignored} total docs ignored.") 
+        sentlog.info(f"- {num_docs_ignored} total docs ignored.", html_tag='p') 
 
     total_docs_to_analyze = len(data_list) - num_docs_ignored
     total_perc_ignored = total_docs_to_analyze / len(data_list)
