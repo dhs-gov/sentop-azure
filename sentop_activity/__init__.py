@@ -87,36 +87,48 @@ def main(name: object) -> json:
 
     # ============================= TOPIC MODELING =============================
    
+    run_topic_modeling = True
+    if len(data_list) < 75:
+        run_topic_modeling = False
+        sentlog.info("Size of data list is less than minimum. Skipping topic modeling.", html_tag='p')
+
     sentlog.info("<hr>", html_tag='other')
     sentlog.info("Topic Modeling", html_tag='h1')
 
     # ---------------------------------- LDA -----------------------------------
  
-    lda_results, lda_error = lda_tomotopy.get_topics(
-        data_list, all_stop_words)
+    lda_results = None
 
-    if lda_error:
-        sentlog.error(f"{lda_error}")
-    elif lda_results.topics_list:
-        db = postgres.Database()
-        db.create_lda_table(sentop_id, lda_results.topics_list)
-        db.create_lda_nooverlap_table(sentop_id, lda_results.topics_list, lda_results.duplicate_words_across_topics)
-    else:
-        sentlog.warn("LDA topics could not be generated.")
+    if run_topic_modeling: 
+        # Perform LDA
+        lda_results, lda_error = lda_tomotopy.get_topics(
+            data_list, all_stop_words)
+
+        if lda_error:
+            sentlog.error(f"{lda_error}")
+        elif lda_results.topics_list:
+            db = postgres.Database()
+            db.create_lda_table(sentop_id, lda_results.topics_list)
+            db.create_lda_nooverlap_table(sentop_id, lda_results.topics_list, lda_results.duplicate_words_across_topics)
+        else:
+            sentlog.warn("LDA topics could not be generated.")
 
     # ------------------------------- BERTopic ---------------------------------
 
-    # Perform BERTopic
-    bertopic_results, bert_error = topmod_bertopic.get_topics(data_list, all_stop_words)
+    bertopic_results = None
 
-    if bert_error:
-        sentlog.error(f"{bert_error}.")
-    elif bertopic_results.topics_list:
-        db = postgres.Database()
-        db.create_bertopic_table(sentop_id, bertopic_results.topics_list)
-        db.create_bertopic_nooverlap_table(sentop_id, bertopic_results.topics_list, bertopic_results.duplicate_words_across_topics)
-    else:
-        sentlog.error(f"BERTopic topics could not be generated.")
+    if run_topic_modeling:
+        # Perform BERTopic
+        bertopic_results, bert_error = topmod_bertopic.get_topics(data_list, all_stop_words)
+
+        if bert_error:
+            sentlog.error(f"{bert_error}.")
+        elif bertopic_results.topics_list:
+            db = postgres.Database()
+            db.create_bertopic_table(sentop_id, bertopic_results.topics_list)
+            db.create_bertopic_nooverlap_table(sentop_id, bertopic_results.topics_list, bertopic_results.duplicate_words_across_topics)
+        else:
+            sentlog.error(f"BERTopic topics could not be generated.")
 
     # ----------------------------- RESULTS TO DB ------------------------------
 
