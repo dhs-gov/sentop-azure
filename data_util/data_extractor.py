@@ -53,20 +53,27 @@ def get_col_values(ws):
 
 def get_col_values_as_str(ws):
     sentlog = sentop_log.SentopLog()
+
     try:
         annotation = ""
         for row in ws.iter_rows():
+
             for col_cell in row:
+
                 val = col_cell.value
+
                 annotation = annotation + val
+
         return annotation
     except Exception as e:
         globalutils.show_stack_trace(str(e))
 
 
 def get_xlsx_data(bytes):
+
     sentlog = sentop_log.SentopLog()
     try:
+
         xlsx = io.BytesIO(bytes)
         wb = load_workbook(xlsx)
         sentlog.info(f"Worksheets|", html_tag='keyval')
@@ -165,29 +172,49 @@ def get_xlsx_data(bytes):
         user_stop_words = []
         annotation = None
         try:
-            stop_words_ws = wb.get_sheet_by_name('SENTOP Stop Words')
-            if stop_words_ws:
-                user_stop_words = get_col_values(stop_words_ws)
-                sentlog.info(f"User stop words|", html_tag='keyval')
-                sentlog.info("<pre>", html_tag='other')
-                for x in user_stop_words:
-                    sentlog.info(f"- {x}", html_tag='p')
-                sentlog.info("</pre>", html_tag='other')
-            else:
-                user_stop_words = []
+            stop_words_ws = None
+            try:
+                stop_words_ws = wb.get_sheet_by_name('SENTOP Stop Words')
+
+
+                if stop_words_ws:
+
+                    user_stop_words = get_col_values(stop_words_ws)
+                    sentlog.info(f"User stop words|", html_tag='keyval')
+                    sentlog.info("<pre>", html_tag='other')
+                    for x in user_stop_words:
+                        sentlog.info(f"- {x}", html_tag='p')
+                    sentlog.info("</pre>", html_tag='other')
+
+                else:
+                    user_stop_words = []
+
+            except Exception as e:
+                sentlog.warn(f"No SENTOP Stop Words worksheet found.")
+
+
 
         # --------------------- GET ANNOTATION ---------------------
+            annotation_ws = None
 
-            annotation_ws = wb.get_sheet_by_name('SENTOP Annotation')
-            if annotation_ws:
-                annotation = get_col_values_as_str(annotation_ws)
-            else:
-                sentlog.info(f"No user annotation found.", html_tag='p')
-                annotation = None
+            try:
+
+                annotation_ws = wb.get_sheet_by_name('SENTOP Annotation')
+                if annotation_ws:
+                    sentlog.info("Found annotation worksheet.", html_tag='p')
+                    annotation = get_col_values_as_str(annotation_ws)
+                    sentlog.info(f"Found annotation: {annotation}", html_tag='p')
+                else:
+                    sentlog.info(f"No user annotation found.", html_tag='p')
+                    annotation = None
+            except Exception as e:
+                sentlog.warn(f"No SENTOP Annotation worksheet found.")
+
         except Exception as e:
             globalutils.show_stack_trace(str(e))
             user_stop_words = [] 
             annotation = None
+
 
         if row_id_list and main_data_list:
             return row_id_list, main_data_list, user_stop_words, annotation, None
