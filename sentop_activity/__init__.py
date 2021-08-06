@@ -80,6 +80,7 @@ def main(name: object) -> json:
     all_stop_words = data_in_obj.all_stop_words
     row_id_list = data_in_obj.row_id_list
     annotation = data_in_obj.annotation
+    print(f"Annotation: {annotation}")
 
     # =========================== SENTIMENT ANALYSIS ===========================
 
@@ -94,6 +95,8 @@ def main(name: object) -> json:
 
     sentlog.info("<hr>", html_tag='other')
     sentlog.info("Topic Modeling", html_tag='h1')
+    if not run_topic_modeling:
+        sentlog.warn("Topic modeling was not performed due to having less than minimum data size.")
 
     # ---------------------------------- LDA -----------------------------------
  
