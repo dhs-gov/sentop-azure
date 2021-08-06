@@ -146,13 +146,23 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, berto
    
     sentlog = sentop_log.SentopLog()
     try:
-        bert_sentence_topics = bertopic_results.topic_per_row
-        bert_topics = bertopic_results.topics_list
-        bert_duplicate_words = bertopic_results.duplicate_words_across_topics
+        bert_sentence_topics = None
+        bert_topics = None
+        bert_duplicate_words = None
 
-        lda_sentence_topics = lda_results.topic_per_row
-        lda_topics = lda_results.topics_list
-        lda_duplicate_words = lda_results.duplicate_words_across_topics
+        if bertopic_results:
+            bert_sentence_topics = bertopic_results.topic_per_row
+            bert_topics = bertopic_results.topics_list
+            bert_duplicate_words = bertopic_results.duplicate_words_across_topics
+
+        lda_sentence_topics = None
+        lda_topics = None
+        lda_duplicate_words = None
+
+        if lda_results:
+            lda_sentence_topics = lda_results.topic_per_row
+            lda_topics = lda_results.topics_list
+            lda_duplicate_words = lda_results.duplicate_words_across_topics
 
         output_dir_path = config.data_dir_path.get("output")
 
@@ -169,8 +179,14 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, berto
             if (data_list[i]):
                 row_data.append(num_list[i])
                 row_data.append(data_list[i])
-                row_data.append(bert_sentence_topics[i])
-                row_data.append(lda_sentence_topics[i])
+                if bert_sentence_topics:
+                    row_data.append(bert_sentence_topics[i])
+                else:
+                    row_data.append("N/A")
+                if lda_sentence_topics:
+                    row_data.append(lda_sentence_topics[i])
+                else:
+                    row_data.append("N/A")
                 row_data.append(class3.data_list[i])
                 row_data.append(class5.data_list[i])
                 row_data.append(emotion1.data_list[i])
@@ -217,75 +233,78 @@ def generate_excel(id, annotation, num_list, data_list, sentiment_results, berto
         ws4.append(annotation_list)
 
         # Create BERTopic topics data
-        rows = []
-        for i in range(len(bert_topics)):
-            for j in range(len(bert_topics[i].words)):
-                row_data = []
-                row_data.append(bert_topics[i].topic_num)
-                row_data.append(bert_topics[i].words[j])
-                row_data.append(float(bert_topics[i].weights[j]))
-                rows.append(row_data)
+        if bert_topics:
+            rows = []
 
-        # Create BERTopic topics data XLSX sheet
-        ws2 = wb.create_sheet(title="BERTopic")
-        ws2.append(['Topic', 'Top Words', 'Weight'])
-        for i in range(len(rows)):
-            ws2.append(rows[i])
-
-        # Create BERTopic non-overlapping topic words data
-        rows = []
-        for i in range(len(bert_topics)):
-            for j in range(len(bert_topics[i].words)):
-                if not bert_topics[i].words[j] in bert_duplicate_words:
+            for i in range(len(bert_topics)):
+                for j in range(len(bert_topics[i].words)):
                     row_data = []
                     row_data.append(bert_topics[i].topic_num)
                     row_data.append(bert_topics[i].words[j])
                     row_data.append(float(bert_topics[i].weights[j]))
                     rows.append(row_data)
 
-        # Create BERTopic non-overlapping topics data XLSX sheet
-        ws2 = wb.create_sheet(title="BERTopic Non-Overlapping Topics")
-        ws2.append(['Topic', 'Top Words', 'Weight'])
-        for i in range(len(rows)):
-            ws2.append(rows[i])  
+            # Create BERTopic topics data XLSX sheet
+            ws2 = wb.create_sheet(title="BERTopic")
+            ws2.append(['Topic', 'Top Words', 'Weight'])
+            for i in range(len(rows)):
+                ws2.append(rows[i])
+
+            # Create BERTopic non-overlapping topic words data
+            rows = []
+            for i in range(len(bert_topics)):
+                for j in range(len(bert_topics[i].words)):
+                    if not bert_topics[i].words[j] in bert_duplicate_words:
+                        row_data = []
+                        row_data.append(bert_topics[i].topic_num)
+                        row_data.append(bert_topics[i].words[j])
+                        row_data.append(float(bert_topics[i].weights[j]))
+                        rows.append(row_data)
+
+            # Create BERTopic non-overlapping topics data XLSX sheet
+            ws2 = wb.create_sheet(title="BERTopic Non-Overlapping Topics")
+            ws2.append(['Topic', 'Top Words', 'Weight'])
+            for i in range(len(rows)):
+                ws2.append(rows[i])  
 
         # Create LDA topics data
-        rows = []
-        for i in range(len(lda_topics)):
-            #print("LDA i: ", i)
-            for j in range(len(lda_topics[i].words)):
-                #print("LDA j: ", j)
-                row_data = []
-                row_data.append(lda_topics[i].topic_num)
-                row_data.append(lda_topics[i].words[j])
-                row_data.append(float(lda_topics[i].weights[j]))
-                rows.append(row_data)
-
-        # Create LDA topics data XLSX sheet
-        ws3 = wb.create_sheet(title="LDA")
-        fields = ['Topic', 'Top Words', 'Weight']
-        ws3.append(fields)
-        for i in range(len(rows)):
-            ws3.append(rows[i])
-
-        # Create LDA non-overlapping topics words data
-        rows = []
-        for i in range(len(lda_topics)):
-            #print("LDA i: ", i)
-            for j in range(len(lda_topics[i].words)):
-                if not lda_topics[i].words[j] in lda_duplicate_words:
+        if lda_topics:
+            rows = []
+            for i in range(len(lda_topics)):
+                #print("LDA i: ", i)
+                for j in range(len(lda_topics[i].words)):
+                    #print("LDA j: ", j)
                     row_data = []
                     row_data.append(lda_topics[i].topic_num)
                     row_data.append(lda_topics[i].words[j])
                     row_data.append(float(lda_topics[i].weights[j]))
                     rows.append(row_data)
 
-        # Create LDA topics data XLSX sheet
-        ws3 = wb.create_sheet(title="LDA Non-Overlapping Topics")
-        fields = ['Topic', 'Top Words', 'Weight']
-        ws3.append(fields)
-        for i in range(len(rows)):
-            ws3.append(rows[i])
+            # Create LDA topics data XLSX sheet
+            ws3 = wb.create_sheet(title="LDA")
+            fields = ['Topic', 'Top Words', 'Weight']
+            ws3.append(fields)
+            for i in range(len(rows)):
+                ws3.append(rows[i])
+
+            # Create LDA non-overlapping topics words data
+            rows = []
+            for i in range(len(lda_topics)):
+                #print("LDA i: ", i)
+                for j in range(len(lda_topics[i].words)):
+                    if not lda_topics[i].words[j] in lda_duplicate_words:
+                        row_data = []
+                        row_data.append(lda_topics[i].topic_num)
+                        row_data.append(lda_topics[i].words[j])
+                        row_data.append(float(lda_topics[i].weights[j]))
+                        rows.append(row_data)
+
+            # Create LDA topics data XLSX sheet
+            ws3 = wb.create_sheet(title="LDA Non-Overlapping Topics")
+            fields = ['Topic', 'Top Words', 'Weight']
+            ws3.append(fields)
+            for i in range(len(rows)):
+                ws3.append(rows[i])
 
         # Save XLSX
         wb.save(filename = xlsx_out)
