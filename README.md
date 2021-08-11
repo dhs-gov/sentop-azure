@@ -49,7 +49,7 @@ Sentiment analysis is performed using [AdaptNLP](https://github.com/Novetta/adap
     - pride
     - realization
     - relief
-    - emorse
+    - remorse
     - sadness
     - surprise 
 5. [Twitter roBERTa-base for Offensive Language Identification](https://huggingface.co/cardiffnlp/twitter-roberta-base-offensive) for 2-class offensive language detection:
