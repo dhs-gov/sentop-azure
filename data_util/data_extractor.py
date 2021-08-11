@@ -90,7 +90,7 @@ def get_xlsx_data(bytes):
         id_column = None
         row = ws[1]
         col_num = 0
-        # Data ID column, if it exists, MUST have RED background color red (#FF0000) in FIRST HEADER ROW.
+        # Data ID column, if it exists, MUST have RED (#FF0000) font color in FIRST HEADER ROW.
         id_column = None
         for col_cell in row:
             col_num = col_num + 1
