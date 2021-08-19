@@ -166,9 +166,12 @@ def main(name: object) -> json:
 
     sentlog.info_h2("Status")
 
-    #db = postgres.Database()
-    #db.create_result_table(sentop_id, row_id_list, data_list, sentiment_results, bertopic_results, lda_results, table_data, table_col_headers)
-    sentlog.info_keyval(f"Wrote PostgreSQL tables|Completed")
+    db = postgres.Database()
+    error = db.create_result_table(sentop_id, row_id_list, data_list, sentiment_results, bertopic_results, lda_results, table_data, table_col_headers)
+    if error:
+        sentlog.error(error)
+    else:
+        sentlog.info_keyval(f"Wrote PostgreSQL tables|Completed")
 
     # ---------------------------- RESULTS TO XLSX -----------------------------
 
