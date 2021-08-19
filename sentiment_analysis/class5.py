@@ -7,8 +7,8 @@ This model classifies sentiment polarity using the following labels:
 5 stars
 '''
 
-from globals import globalutils
-from globals import sentop_log
+from util import globalutils
+from util import sentop_log
 
 model_name = "nlptown/bert-base-multilingual-uncased-sentiment"
 
@@ -74,19 +74,21 @@ def print_totals(sentiments):
             star4 = star4 + 1
         elif sentiment == '5_stars':
             star5 = star5 + 1
-    sentlog.info(f"<pre>", html_tag='other')
-    sentlog.info(f"- 1 Star: {star1}", html_tag='other')
-    sentlog.info(f"- 2 Stars: {star2}", html_tag='p')
-    sentlog.info(f"- 3 Stars: {star3}", html_tag='p')
-    sentlog.info(f"- 4 Stars: {star4}", html_tag='p')
-    sentlog.info(f"- 5 Stars: {star5}", html_tag='p')
-    sentlog.info(f"</pre>", html_tag='other')
+
+    sentlog.info_keyval(f"1 Star|{star1}")
+    sentlog.info_keyval(f"2 Stars|{star2}")
+    sentlog.info_keyval(f"3 Stars|{star3}")
+    sentlog.info_keyval(f"4 Stars|{star4}")
+    sentlog.info_keyval(f"5 Stars|{star5}")
+
 
 
 def assess(classifier, docs):
     sentlog = sentop_log.SentopLog()
-    sentlog.info(f"5-Class Polarity", html_tag='h2')
-    sentlog.info(f"Model|<a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a>", html_tag='keyval')
+    sentlog.info_h2(f"5-Class Polarity")
+    sentlog.info_p(f"Model: <a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a>")
+    sentlog.info_p("")
+
     sentiments = []
     for doc in docs:
         #print("doc: ", doc)

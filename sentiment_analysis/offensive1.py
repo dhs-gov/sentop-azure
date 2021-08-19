@@ -4,8 +4,8 @@ not_offensive
 offensive
 '''
 
-from globals import globalutils
-from globals import sentop_log
+from util import globalutils
+from util import sentop_log
 
 model_name = "cardiffnlp/twitter-roberta-base-offensive"
 
@@ -58,16 +58,16 @@ def print_totals(sentiments):
         elif sentiment == 'offensive':
             offensive = offensive + 1
 
-    sentlog.info(f"<pre>", html_tag='other')
-    sentlog.info(f"- Not Offensive: {notoffensive}", html_tag='p')
-    sentlog.info(f"- Offensive: {offensive}", html_tag='p')
-    sentlog.info(f"</pre>", html_tag='other')
+    sentlog.info_keyval(f"Not Offensive|{notoffensive}")
+    sentlog.info_keyval(f"Offensive|{offensive}")
 
 
 def assess(classifier, docs):
     sentlog = sentop_log.SentopLog()
-    sentlog.info(f"Offensive", html_tag='h2')
-    sentlog.info(f"Model|<a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a>", html_tag='keyval')
+    sentlog.info_h2(f"Offensive")
+    sentlog.info_p(f"Model|<a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a>")
+    sentlog.info_p("")
+
     sentiments = []
     for doc in docs:
         #print("doc: ", doc)

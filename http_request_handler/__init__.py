@@ -2,30 +2,18 @@ import logging
 import jsonpickle
 import azure.functions as func
 import azure.durable_functions as df
-from data_util import data_extractor
-from data_util import data_cleaner
-from database import postgres
-from globals import globalutils
-from globals import sentop_log
 from datetime import datetime
-from dateutil import tz
+from util import data_extractor
+from util import text_validator
+from util import postgres
+from util import globalutils
+from util import sentop_log
 import sentop_config as config
-from globals import sentop_log
-
-
-class DataIn:
-    def __init__(self, kms_id, sentop_id, row_id_list, data_list, all_stop_words, annotation):
-        #print(f"Creating DataIn with SENTOP ID: {sentop_id}")
-        self.kms_id = kms_id
-        self.sentop_id = sentop_id
-        self.row_id_list = row_id_list  
-        self.data_list = data_list
-        self.all_stop_words = all_stop_words
-        self.annotation = annotation
+from util import DataType
             
 
-# Returns SENTOP ID generated from current timestamp.
-def get_sentop_id():
+# Generate SENTOP ID from current timestamp.
+def generate_sentop_id():
     import datetime
     milliseconds_since_epoch = datetime.datetime.now().timestamp() * 1000
     return str(int(milliseconds_since_epoch))
@@ -52,10 +40,10 @@ def check_query_params(req):
         # Azure replaces '%20' with spaces, so re-add '%20' since this is
         # required for Windows file URLs.
         file_url = kms_id.replace(" ", "%20")
-        sentop_id = get_sentop_id()
+        sentop_id = generate_sentop_id()
         return "url" + sentop_id, file_url, False, None
     else:
-        sentop_id = get_sentop_id()
+        sentop_id = generate_sentop_id()
         return "kms" + sentop_id, kms_id, False, None
 
 
@@ -119,7 +107,7 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
 
    # -------------------------- CHECK QUERY PARAMS -----------------------------
 
-    sentlog.h1("Request")
+    sentlog.info_h1("Submission")
 
     sentop_id, kms_id, is_test, error = check_query_params(req)
     if error:
@@ -127,12 +115,12 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
         sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse(error, status_code=400)
     if is_test:
-        sentlog.info("Test request successful.", html_tag='p')
+        sentlog.info_p("Test request successful.")
         sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse("SENTOP test successful.", status_code=200)
 
-    sentlog.info(f"KMS ID|{kms_id}", html_tag='keyval')
-    sentlog.info(f"SENTOP ID|{sentop_id}", html_tag='keyval')
+    sentlog.info_keyval(f"KMS ID|{kms_id}")
+    sentlog.info_keyval(f"SENTOP ID|{sentop_id}")
 
    # ---------------------- SAVE REQUEST DATA TO DB ----------------------------
 
@@ -143,58 +131,42 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
         sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse(error, status_code=400)
 
-   # ------------------------ CONVERT INCOMING DATA ----------------------------
+   # ------------------------ GET INCOMING DATA ----------------------------
 
-    sentlog.info("Data", html_tag='h1')
-    row_id_list, data_list, user_stop_words, annotation, error = data_extractor.get_data(req, sentop_id, kms_id)
+    sentlog.info_h1("Data")
+    data_in, error = data_extractor.get_data(req, sentop_id, kms_id)
 
     if error:
-        sentlog.error(f"Could not find file. Aborting.")
-        sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse(error, status_code=400)
-    elif not data_list:
-        sentlog.error(f"Could not find JSON or file data.")
-        sentlog.write(sentop_id, config.data_dir_path.get("output"))
-        return func.HttpResponse("Error retrieving JSON or file data.", status_code=400)
-    
-    sentlog.info(f"Non-blank documents|{len(data_list)}", html_tag='keyval')
+    elif data_in:
+        data_in.show_info()
+        #if not data_in.row_id_list:
+        #    return func.HttpResponse("Error retrieving row ID list.", status_code=400)
+        if not data_in.data_list:
+            return func.HttpResponse("Error retrieving corpus data.", status_code=400)
+        elif data_in.data_type == 2 and not data_in.xlsx_data_table:
+            return func.HttpResponse("Error retrieving data table for XLSX data.", status_code=400)
+        elif data_in.data_type == 2 and not data_in.headers_row_index:
+            return func.HttpResponse("Error retrieving headers row for XLSX data.", status_code=400)
+    else:
+        return func.HttpResponse("Unknown error getting data.", status_code=400)
 
-    if annotation:
-        sentlog.info(f"Annotation|{annotation}", html_tag='keyval')
-        annotation_error = db.add_annotation(sentop_id, annotation)
-        if annotation_error:
-            sentlog.warn(f"Could not update annotation in database: {annotation_error}.")
+    if not data_in.all_stop_words:
+        sentlog.warn(f"No stop words found.")
 
-    if len(data_list) != len(row_id_list):
-        sentlog.error("Number of rows does not match number of documents.")
-        sentlog.write(sentop_id, config.data_dir_path.get("output"))
-        return func.HttpResponse("ERROR! Number of rows does not match number of documents.", status_code=400)
+    sentlog.write(sentop_id, config.data_dir_path.get("output"))
 
-    if not user_stop_words:
-        sentlog.warn(f"No user stop words found.")
-
-   # ---------------------- GET ALL STOP WORDS --------------------------
-
-    all_stop_words = globalutils.get_frozen_stopwords(user_stop_words)
-
-   # ---------------------- REMOVE INVALID DATAPOINTS --------------------------
-
-    # Apply stopwords and additional checks to remove invalid documents (rows).
-    row_id_list, data_list, error = data_cleaner.remove_invalid_datapoints(row_id_list, data_list, all_stop_words)
-
-    if len(data_list) != len(row_id_list):
-        sentlog.error("Number of rows does not match number of documents.")
-        sentlog.write(sentop_id, config.data_dir_path.get("output"))
-        return func.HttpResponse("ERROR! Number of rows does not match number of documents.", status_code=400)
 
    # ------------------ CREATE JSON DATA FOR AZURE ACTIVITY --------------------
 
-    #sentlog.append("Data in: ", data_list)
-    data_list_obj = DataIn(kms_id, sentop_id, row_id_list, data_list, all_stop_words, annotation)
 
     # Since Azure requires that we pass an object that is JSON
     # serializable, we have to convert all data to a JSON object.
-    json_obj = jsonpickle.encode(data_list_obj, unpicklable=True)
+    json_obj = jsonpickle.encode(data_in, unpicklable=True)
+
+    if not json_obj:
+        sentlog.error("Could not create JSON object from data_in")
+
 
     # ------------------------ CREATE NEW INSTANCE -----------------------------
 

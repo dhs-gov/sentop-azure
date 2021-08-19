@@ -6,8 +6,8 @@ optimism
 sadness 
 '''
 
-from globals import globalutils
-from globals import sentop_log
+from util import globalutils
+from util import sentop_log
 
 model_name = "cardiffnlp/twitter-roberta-base-emotion"
 
@@ -71,18 +71,18 @@ def print_totals(sentiments):
         elif sentiment == 'sadness':
             sadness = sadness + 1
 
-    sentlog.info(f"<pre>", html_tag='other')
-    sentlog.info(f"- Joy: {joy}", html_tag='p')
-    sentlog.info(f"- Anger: {anger}", html_tag='p')
-    sentlog.info(f"- Optimism: {optimism}", html_tag='p')
-    sentlog.info(f"- Sadness: {sadness}", html_tag='p')
-    sentlog.info(f"</pre>", html_tag='other')
+    sentlog.info_keyval(f"Joy|{joy}")
+    sentlog.info_keyval(f"Anger|{anger}")
+    sentlog.info_keyval(f"Optimism|{optimism}")
+    sentlog.info_keyval(f"Sadness|{sadness}")
 
 
 def assess(classifier, docs):
     sentlog = sentop_log.SentopLog()
-    sentlog.info(f"Emotion 1", html_tag='h2')
-    sentlog.info(f"Model|<a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a>", html_tag='keyval')
+    sentlog.info_h2(f"Emotion 1")
+    sentlog.info_p(f"Model: <a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a>")
+    sentlog.info_p("")
+
     sentiments = []
     for doc in docs:
         #print("doc: ", doc)

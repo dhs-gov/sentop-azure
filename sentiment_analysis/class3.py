@@ -6,8 +6,8 @@ positive
 '''
 
 from numpy import negative
-from globals import globalutils
-from globals import sentop_log
+from util import globalutils
+from util import sentop_log
 
 
 model_name = "cardiffnlp/twitter-roberta-base-sentiment"
@@ -65,19 +65,19 @@ def print_totals(sentiments):
         else:
             positive_num = positive_num + 1
 
-    sentlog.info(f"<pre>", html_tag='other')
-    sentlog.info(f"- Negative: {negative_num}", html_tag='p')
-    sentlog.info(f"- Neutral: {neutral_num}", html_tag='p')
-    sentlog.info(f"- Positive: {positive_num}", html_tag='p')
-    sentlog.info(f"</pre>", html_tag='other')
+    sentlog.info_keyval(f"Negative|{negative_num}")
+    sentlog.info_keyval(f"Neutral|{neutral_num}")
+    sentlog.info_keyval(f"Positive|{positive_num}")
 
 def assess(classifier, docs):
     sentlog = sentop_log.SentopLog()
-    sentlog.info(f"3-Class Polarity", html_tag='h2')
-    sentlog.info(f"Model|<a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a>", html_tag='keyval')
+    sentlog.info_h2(f"3-Class Polarity")
+    sentlog.info_p(f"Model: <a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a>")
+    sentlog.info_p("")
+
     sentiments = []
     for doc in docs:
-        #print("doc: ", doc)
+        #print(f"doc: {doc}")
         sentiment = get_sentiment(classifier, doc)
         if sentiment:
             sentiments.append(sentiment)

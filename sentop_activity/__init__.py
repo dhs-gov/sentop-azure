@@ -1,6 +1,7 @@
 from adaptnlp import EasySequenceClassifier
 from topic_modeling import topmod_bertopic
 from topic_modeling import lda_tomotopy
+from topic_modeling import config_topic_mod
 from sentiment_analysis import class3 
 from sentiment_analysis import class5 
 from sentiment_analysis import emotion1 
@@ -8,13 +9,14 @@ from sentiment_analysis import emotion2
 from sentiment_analysis import offensive1 
 #from sentiment_analysis import hate -- couldn't detect hate
 #from sentiment_analysis import irony -- too many false positives/negatives
-from globals import globalutils
+from util import globalutils
 import json
 import jsonpickle
-from database import postgres
+from util import postgres
 import sentop_config as config
 import time
-from globals import sentop_log
+from util import sentop_log
+
 
 
 class Sentiments:
@@ -28,7 +30,7 @@ class Sentiments:
 
 def get_sentiments(data_list, sentlog): 
     sentlog = sentop_log.SentopLog()
-    sentlog.info("Sentiment Analyses", html_tag='h1')
+    sentlog.info_h1("Sentiment Analyses")
 
     classifier = EasySequenceClassifier()
     sentiment_results = []
@@ -68,18 +70,45 @@ def main(name: object) -> json:
 
     start = time.time()
     sentlog = sentop_log.SentopLog()
-    sentlog.info("<br><hr>", html_tag='other')
-    sentlog.info("<div style=\"text-align: center; color: #e97e16; \">*** If this line appears more than once, then Azure Function replay has occurred! ***</div>\n", html_tag='p')
-    sentlog.info("<hr>", html_tag='other')
+    sentlog.info_p("<br><hr>")
+    sentlog.info_p("<div style=\"text-align: center; color: #e97e16; \">*** If this line appears more than once, then Azure Function replay has occurred! ***</div>\n")
+    sentlog.info_p("<hr>")
 
     json_obj = name
     data_in_obj = jsonpickle.decode(json_obj)
     kms_id = data_in_obj.kms_id
     sentop_id = data_in_obj.sentop_id
     data_list = data_in_obj.data_list
+    #sentlog.info_p(f"SENTOP Activity: data_list size: {len(data_list)}")
+    #for d in data_list:
+    #    print(f"Data list: {d}")
+
     all_stop_words = data_in_obj.all_stop_words
     row_id_list = data_in_obj.row_id_list
+    if row_id_list:
+        sentlog.info_p("Found row ID list")
+    else:
+        sentlog.warn("No row ID list found.")
+        
     annotation = data_in_obj.annotation
+
+    table_data = None
+    try:
+        if data_in_obj.table_data:
+            table_data = data_in_obj.table_data
+            #globalutils.print_table(f"Table data: {table_data}")
+    except Exception as e:
+        sentlog.info_p("No table data found")
+
+    table_col_headers = None
+    table_headers_row_index = None
+    try:
+        if data_in_obj.table_col_headers:
+            table_col_headers = data_in_obj.table_col_headers
+            table_headers_row_index = data_in_obj.table_headers_row_index
+    except Exception as e:
+        sentlog.info_p("No table col headers found")
+
     print(f"Annotation: {annotation}")
 
     # =========================== SENTIMENT ANALYSIS ===========================
@@ -89,23 +118,23 @@ def main(name: object) -> json:
     # ============================= TOPIC MODELING =============================
    
     run_topic_modeling = True
-    if len(data_list) < 75:
+    if len(data_list) < config_topic_mod.MIN_DOCS_TM:
         run_topic_modeling = False
-        sentlog.info("Size of data list is less than minimum. Skipping topic modeling.", html_tag='p')
+        #sentlog.info_p(f"Size of data list is less than minimum ({config_topic_mod.MIN_DOCS_TM}). Skipping topic modeling.")
 
-    sentlog.info("<hr>", html_tag='other')
-    sentlog.info("Topic Modeling", html_tag='h1')
+    sentlog.info_p("<hr>")
+    sentlog.info_h1("Topic Modeling")
     if not run_topic_modeling:
-        sentlog.warn("Topic modeling was not performed due to having less than minimum data size.")
+        sentlog.warn(f"Topic modeling was not performed due to data size ({len(data_list)}) being less than minimum required ({config_topic_mod.MIN_DOCS_TM}).")
 
+    #print(f"{data_list}")
     # ---------------------------------- LDA -----------------------------------
  
     lda_results = None
 
     if run_topic_modeling: 
         # Perform LDA
-        lda_results, lda_error = lda_tomotopy.get_topics(
-            data_list, all_stop_words)
+        lda_results, lda_error = lda_tomotopy.get_topics(data_list, all_stop_words)
 
         if lda_error:
             sentlog.error(f"{lda_error}")
@@ -135,27 +164,27 @@ def main(name: object) -> json:
 
     # ----------------------------- RESULTS TO DB ------------------------------
 
-    sentlog.info("Status", html_tag='h2')
+    sentlog.info_h2("Status")
 
-    db = postgres.Database()
-    db.create_result_table(sentop_id, row_id_list, data_list, sentiment_results, bertopic_results, lda_results)
-    sentlog.info(f"PostgreSQL tables|Completed", html_tag='keyval')
+    #db = postgres.Database()
+    #db.create_result_table(sentop_id, row_id_list, data_list, sentiment_results, bertopic_results, lda_results, table_data, table_col_headers)
+    sentlog.info_keyval(f"Wrote PostgreSQL tables|Completed")
 
     # ---------------------------- RESULTS TO XLSX -----------------------------
 
-    globalutils.generate_excel(sentop_id, annotation, row_id_list, data_list, sentiment_results, bertopic_results, lda_results)
-    sentlog.info(f"Excel XLSX files|Completed", html_tag='keyval')
+    globalutils.generate_excel(sentop_id, annotation, row_id_list, data_list, sentiment_results, bertopic_results, lda_results, table_data, table_col_headers)
+    sentlog.info_keyval(f"Wrote Excel XLSX file|Completed")
 
     # -------------------------------- FINISH ----------------------------------
 
     result = Response(sentop_id)
     json_out = jsonpickle.encode(result, unpicklable=False)
-    sentlog.info(f"Completed processing|{kms_id}", html_tag='keyval')
+    sentlog.info_keyval(f"Completed processing KMS ID|{kms_id}")
     end = time.time() 
 
     hours, rem = divmod(end-start, 3600)
     minutes, seconds = divmod(rem, 60)
-    sentlog.info("Elapsed|{:0>2}h {:0>2}m {:0>2}s".format(int(hours),int(minutes),seconds), html_tag='keyval')
+    sentlog.info_keyval("Elapsed|{:0>2}h {:0>2}m {:0>2}s".format(int(hours),int(minutes),seconds))
 
     if json_out:
         sentlog.write(sentop_id, config.data_dir_path.get("output"))

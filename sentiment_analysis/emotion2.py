@@ -30,8 +30,8 @@ sadness
 surprise  
 '''
 
-from globals import globalutils
-from globals import sentop_log
+from util import globalutils
+from util import sentop_log
 
 
 model_name = "monologg/bert-base-cased-goemotions-original"
@@ -163,41 +163,41 @@ def print_totals(sentiments):
         elif sentiment == 'surprise':
             surprise = surprise + 1
 
-    sentlog.info(f"<pre>", html_tag='other')
-    sentlog.info(f"- Admiration: {admiration}", html_tag='p')
-    sentlog.info(f"- Amusement: {amusement}", html_tag='p')
-    sentlog.info(f"- Anger: {anger}", html_tag='p')
-    sentlog.info(f"- Annoyance: {annoyance}", html_tag='p')
-    sentlog.info(f"- Approval: {approval}", html_tag='p')
-    sentlog.info(f"- Caring: {caring}", html_tag='p')
-    sentlog.info(f"- Confusion: {confusion}", html_tag='p')
-    sentlog.info(f"- Curiosity: {curiosity}", html_tag='p')
-    sentlog.info(f"- Desire: {desire}", html_tag='p')
-    sentlog.info(f"- Dissapointment: {disappointment}", html_tag='p')
-    sentlog.info(f"- Disapproval: {disapproval}", html_tag='p')
-    sentlog.info(f"- Embarrassment: {embarrassment}", html_tag='p')
-    sentlog.info(f"- Excitement: {excitement}", html_tag='p')
-    sentlog.info(f"- Fear: {fear}", html_tag='p')
-    sentlog.info(f"- Gratitude: {gratitude}", html_tag='p')
-    sentlog.info(f"- Grief: {grief}", html_tag='p')
-    sentlog.info(f"- Joy: {joy}", html_tag='p')
-    sentlog.info(f"- Love: {love}", html_tag='p')
-    sentlog.info(f"- Nervousness: {nervousness}", html_tag='p')
-    sentlog.info(f"- Neutral: {neutral}", html_tag='p')
-    sentlog.info(f"- Optimism: {optimism}", html_tag='p')
-    sentlog.info(f"- Pride: {pride}", html_tag='p')
-    sentlog.info(f"- Realization: {realization}", html_tag='p')
-    sentlog.info(f"- Relief: {relief}", html_tag='p')
-    sentlog.info(f"- Remorse: {remorse}", html_tag='p')
-    sentlog.info(f"- Sadness: {sadness}", html_tag='p')
-    sentlog.info(f"- Surprise: {surprise}", html_tag='p')
-    sentlog.info(f"</pre>", html_tag='other')
+    sentlog.info_keyval(f"Admiration|{admiration}")
+    sentlog.info_keyval(f"Amusement|{amusement}")
+    sentlog.info_keyval(f"Anger|{anger}")
+    sentlog.info_keyval(f"Annoyance|{annoyance}")
+    sentlog.info_keyval(f"Approval|{approval}")
+    sentlog.info_keyval(f"Caring|{caring}")
+    sentlog.info_keyval(f"Confusion|{confusion}")
+    sentlog.info_keyval(f"Curiosity|{curiosity}")
+    sentlog.info_keyval(f"Desire|{desire}")
+    sentlog.info_keyval(f"Dissapointment|{disappointment}")
+    sentlog.info_keyval(f"Disapproval|{disapproval}")
+    sentlog.info_keyval(f"Embarrassment|{embarrassment}")
+    sentlog.info_keyval(f"Excitement|{excitement}")
+    sentlog.info_keyval(f"Fear|{fear}")
+    sentlog.info_keyval(f"Gratitude|{gratitude}")
+    sentlog.info_keyval(f"Grief|{grief}")
+    sentlog.info_keyval(f"Joy|{joy}")
+    sentlog.info_keyval(f"Love|{love}")
+    sentlog.info_keyval(f"Nervousness|{nervousness}")
+    sentlog.info_keyval(f"Neutral|{neutral}")
+    sentlog.info_keyval(f"Optimism|{optimism}")
+    sentlog.info_keyval(f"Pride|{pride}")
+    sentlog.info_keyval(f"Realization|{realization}")
+    sentlog.info_keyval(f"Relief|{relief}")
+    sentlog.info_keyval(f"Remorse|{remorse}")
+    sentlog.info_keyval(f"Sadness|{sadness}")
+    sentlog.info_keyval(f"Surprise|{surprise}")
 
 
 def assess(classifier, docs):
     sentlog = sentop_log.SentopLog()
-    sentlog.info(f"Emotion 2", html_tag='h2')
-    sentlog.info(f"Model|<a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a>", html_tag='keyval')
+    sentlog.info_h2(f"Emotion 2")
+    sentlog.info_p(f"Model: <a href=\"https://huggingface.co/{model_name}\" target=\"_blank\">{model_name}</a>")
+    sentlog.info_p("")
+
     sentiments = []
     for doc in docs:
         #print("doc: ", doc)

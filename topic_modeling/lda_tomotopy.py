@@ -1,12 +1,12 @@
 import tomotopy as tp
-from globals import globalutils
+from util import globalutils
 # NLTK Lemmatizer does not work well
 import re
 #from transformers import AutoTokenizer, AutoModelForTokenClassification, TokenClassificationPipeline
 from . import config_topic_mod as config     
-from globals import globalutils
-from data_util import data_cleaner
-from globals import sentop_log
+from util import globalutils
+from util import text_validator
+from util  import sentop_log
 
 
 def get_coherence(data_preprocessed, k):
@@ -104,14 +104,14 @@ def get_topic_data(data_preprocessed, k):
    
     topics_list = []
     for n in range (0, mdl.k):
-        sentlog.info(f"Topic: {n}", html_tag='p')
+        sentlog.info_keyval(f"Topic|{n}")
         words_list = []
         weights_list = []
         words = mdl.get_topic_words(n, top_n=config.NUM_WORDS_PER_TOPIC)
         for word in words:
             words_list.append(word[0])
             weights_list.append(str(word[1]))
-            sentlog.info("- " + word[0] + ", " + str(word[1]), html_tag='p')
+            sentlog.info_p("- " + word[0] + ", " + str(word[1]))
 
         topic = config.Topic(n, words_list, weights_list)
         topics_list.append(topic)
@@ -139,52 +139,50 @@ def check_duplicate_words_across_topics(topics_list):
 def get_topics(data_list, all_stop_words):
 
     sentlog = sentop_log.SentopLog()
-    sentlog.info("Tomotopy (LDA)", html_tag='h2')
-    sentlog.info("SENTOP assesses Tomotopy coherence scores for topic sizes <i>k</i>=2..10. The topic size <k> with the highest coherence score is selected as the final LDA topic size.<br><br>", html_tag='p')
-    sentlog.info("URL|<a href=\"https:/https://github.com/bab2min/tomotopy\">https://github.com/bab2min/tomotopy</a>", html_tag='keyval')
+    sentlog.info_h2("Tomotopy (LDA)")
+    sentlog.info_p("SENTOP assesses Tomotopy coherence scores for topic sizes <i>k</i>=2..<i>n</i> where <i>n</i> is the number of data points divided by 10. The topic size <i>k</i> with the highest coherence score is selected as the final LDA topic size.<br>")
+    sentlog.info_keyval("URL|<a href=\"https:/https://github.com/bab2min/tomotopy\">https://github.com/bab2min/tomotopy</a>")
 
     # ---------------------------- PREPROCESS DOCS -----------------------------
 
-    data_preprocessed = data_cleaner.topic_modeling_clean_stop(data_list, all_stop_words)
+    data_preprocessed = text_validator.topic_modeling_clean_stop(data_list, all_stop_words)
 
     # --------------------------- GET COHERENCE SCORES -------------------------
 
     # Get coherence scores for topics sizes 2-n
-    sentlog.info(f"Assessments|", html_tag='keyval')
-    sentlog.info(f"<pre>", html_tag='other')
+    sentlog.info_h3(f"Assessments")
 
     highest_topic_coherence = -999999.99
     highest_coherence_topic_num = -999
-    for k in range(2, 11):
+
+    num_topics = len(data_list) / 10
+    num_topics = int(num_topics) + 1   # Add 1 for inclusitivty
+
+    for k in range(2, num_topics):
         topic_coherence_score = get_coherence(data_preprocessed, k)
-        sentlog.info(f"- k: {k}, Coherence Score: {topic_coherence_score}", html_tag='p')
+        sentlog.info_p(f"- k: {k}, Coherence Score: {topic_coherence_score}")
 
         if topic_coherence_score > highest_topic_coherence:
             highest_topic_coherence = topic_coherence_score
             highest_coherence_topic_num = k
 
-    sentlog.info(f"</pre>", html_tag='other')
 
     # -------- GET TOPICS FOR FOR K WITH HIGHEST COHERENCE SCORE --------
 
-    sentlog.info(f"Final Topics|", html_tag='keyval')
-    sentlog.info("<pre>", html_tag='other')
+    sentlog.info_h3(f"Final Topics")
 
-    sentlog.info(f"- Num topics: {highest_coherence_topic_num}", html_tag='p')
-    sentlog.info(f"- Coherence score: {highest_topic_coherence}", html_tag='p')
-    sentlog.info("", html_tag='p')
+    sentlog.info_keyval(f"Num topics|{highest_coherence_topic_num}")
+    sentlog.info_keyval(f"Coherence score|{highest_topic_coherence}")
 
     topics_per_rows, topics_list, error = get_topic_data(data_preprocessed, highest_coherence_topic_num)
-    sentlog.info("</pre>", html_tag='other')
 
     duplicate_words_across_topics = check_duplicate_words_across_topics(topics_list)
 
-    sentlog.info(f"Final num topic word overlap|{len(duplicate_words_across_topics)}", html_tag='keyval')
-    sentlog.info(f"Final topic word overlap|", html_tag='keyval')
-    sentlog.info("<pre>", html_tag='other')
+    sentlog.info_h3(f"Final topic word overlap")
+    sentlog.info_keyval(f"Num topic overlap|{len(duplicate_words_across_topics)}")
+
     for x in duplicate_words_across_topics:
-        sentlog.info(f"- {x}", html_tag='p')
-    sentlog.info("</pre>", html_tag='other')
+        sentlog.info_p(f"- {x}")
 
     topic_model_results = config.TopicModelResults(topics_per_rows, topics_list, duplicate_words_across_topics)
 
