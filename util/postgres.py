@@ -23,26 +23,35 @@ class Database:
         try:
             self.conn = psycopg2.connect(host=self.url, database=self.db, user=self.username, password=self.pwd)
             self.conn.autocommit = True
+            return None
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
+            return str(e)
 
 
     def close_connection(self):
         try:
             self.conn.close()
+            return None
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
+            return str(e)
 
 
     def execute_stmt(self, sql):
+        sentlog = sentop_log.SentopLog() 
+
         try:
             # print("Executing: ", sql)
             cur = self.conn.cursor()
             cur.execute(sql)
             self.conn.commit()
             cur.close()
+            return None
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(f"Error executing SQL: {sql}, {str(e)}")
+            sentlog.error(f"Error with SQL: {sql}")
+            return str(e)
 
 
     def execute_stmt_data(self, sql, data):
@@ -52,8 +61,10 @@ class Database:
             cur.execute(sql, data)
             self.conn.commit()
             cur.close()
+            return None
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
+            return str(e)
 
 
     def table_exists(self, tablename):
@@ -63,10 +74,10 @@ class Database:
             cur.execute(stmt)
             self.conn.commit()
             cur.close()
-            return bool(cur.rowcount)
-
+            return bool(cur.rowcount), None
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
+            return None, str(e)
 
 
     # Remove table
@@ -74,9 +85,10 @@ class Database:
         try:
             stmt = "DROP TABLE " + tablename
             self.execute_stmt(stmt)
-
+            return None
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
+            return str(e)
 
 
     # Remove all tables associated with ID
@@ -85,15 +97,19 @@ class Database:
             self.remove_table(id + self.results_table_suffix)
             self.remove_table(id + self.lda_words_table_suffix)
             self.remove_table(id + self.bertopic_words_table_suffix)
+            return None
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
+            return str(e)
 
 
     def add_result(self, tablename):
         try:
             print("Test")
+            return None
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
+            return str(e)
 
 
     def clear_table(self, tablename):
@@ -101,9 +117,10 @@ class Database:
         try:
             stmt = "DELETE FROM " + tablename
             self.execute_stmt(stmt)
+            return None
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
-
+            return str(e)
 
    # ------------------------------ SUBMISSIONS -------------------------------
 
@@ -112,8 +129,10 @@ class Database:
             print("Creating submissions table.")
             stmt = "CREATE TABLE submissions (id text, annotation text, json_data text, file_url text, received_date timestamp, completed_date timestamp, status text, message text, PRIMARY KEY(id))"
             self.execute_stmt(stmt)
+            return None
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
+            return str(e)
 
 
     def add_submission(self, id, file_url):
@@ -140,7 +159,7 @@ class Database:
             return None
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
-
+            return str(e)
         finally:
             self.close_connection()
 
@@ -191,7 +210,10 @@ class Database:
         try:
             stmt = ("CREATE TABLE " + tablename +
                 "(num int NOT NULL, topic int, word text, weight float, PRIMARY KEY (num))")
-            self.execute_stmt(stmt)
+            error = self.execute_stmt(stmt)
+            if error:
+                return error
+
             num = 0
             for topic in topics:
                 for i in range(len(topic.words)):
@@ -201,8 +223,10 @@ class Database:
                     data = (num, topic.topic_num, topic.words[i], topic.weights[i])
                     self.execute_stmt_data(stmt, data)
                     num = num + 1
+            return None
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
+            return error
         finally:
             self.close_connection()
 
@@ -226,8 +250,10 @@ class Database:
                         data = (num, topic.topic_num, topic.words[i], topic.weights[i])
                         self.execute_stmt_data(stmt, data)
                         num = num + 1
+            return None
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
+            return str(e)
         finally:
             self.close_connection()
 
@@ -253,9 +279,10 @@ class Database:
                     data = (num, topic.topic_num, topic.words[i], topic.weights[i])
                     self.execute_stmt_data(stmt, data)
                     num = num + 1
-
+            return None
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
+            return str(e)
         finally:
             self.close_connection()
 
@@ -281,9 +308,10 @@ class Database:
                         data = (num, topic.topic_num, topic.words[i], topic.weights[i])
                         self.execute_stmt_data(stmt, data)
                         num = num + 1
-
+            return None
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
+            return str(e)
         finally:
             self.close_connection()
 
@@ -326,10 +354,12 @@ class Database:
             for header in table_col_headers:
                 print(f"Header start: {header}")
                 if header is None:
-                    header = "na"
+                    header = "\"na\""
                 else:
-                    header = header.replace("-","to")
+                    header = header.replace("-","_")
+                    header = header.replace(" ", "_")
                     header = re.sub("[^0-9a-zA-Z_]+", "", header)
+                    header = '"' + header + '"'
 
                 print(f"Header end: {header}")
                 table_data_headers_str = table_data_headers_str + header + " text" + ", "
@@ -343,8 +373,10 @@ class Database:
         try:
             sentlog.info_keyval(f"Creating table|{tablename}")
             create_stmt = ("CREATE TABLE " + tablename + 
-                " (" + table_data_headers_str + "num text, class3 text, class5 text, emotion1 text, emotion2 text, offensive1 text, lda text, bertopic text, PRIMARY KEY (num))")
-            self.execute_stmt(create_stmt)
+                " (" + table_data_headers_str + "\"num\" text, \"class3\" text, \"class5\" text, \"emotion1\" text, \"emotion2\" text, \"offensive1\" text, \"lda\" text, \"bertopic\" text, PRIMARY KEY (num))")
+            error = self.execute_stmt(create_stmt)
+            if error:
+                return error
 
             print(f"table type: {type(table_data)}")
 
@@ -374,13 +406,13 @@ class Database:
                     print(f"j: {j}")
                     val = table_row[j]
                     if not val or val == 'None':
-                        val = "SENTOP_NA"
+                        val = ""
                     
 
                     val = str(val)  # Make sure val is converted to string
                     val = val.strip('"')  # Remove double quotes from string
                     val = val.replace('"', "") # Remove single quotes from string
-                    vals = vals + "\"" + str(val) + "\","  # Add double quotes around entire val
+                    vals = vals + "'" + str(val) + "', "  # Add double quotes around entire val
                 print(f"Vals: {vals}")
 
                 '''
@@ -405,14 +437,17 @@ class Database:
                 sentlog.info_p(f"SQL CREATE: {create_stmt}")
 
                 if (data_list[i]):
-                    #stmt = ("INSERT INTO " + tablename + "(" + headers_insert_str + "class3, class5, emotion1, emotion2, offensive1, lda, bertopic) VALUES (" + vals + str(class3.data_list[i]) + ", " + str(class5.data_list[i]) + ", " + str(emotion1.data_list[i]) + ", " + str(emotion2.data_list[i]) + ", " + str(offensive1.data_list[i]) + ", " + str(lda_topic) + ", " + str(bert_topic) + ")")
-                    insert_stmt = ("INSERT INTO " + tablename + "(" + "num, class3, class5, emotion1, emotion2, offensive1, lda, bertopic) VALUES ('" + str(id_list[i]) + "', '" + str(class3.data_list[i]) + "', '" + str(class5.data_list[i]) + "', '" + str(emotion1.data_list[i]) + "', '" + str(emotion2.data_list[i]) + "', '" + str(offensive1.data_list[i]) + "', '" + str(lda_topic) + "', '" + str(bert_topic) + "')")
+                    insert_stmt = ("INSERT INTO " + tablename + "(" + headers_insert_str + "\"num\", \"class3\", \"class5\", \"emotion1\", \"emotion2\", \"offensive1\", \"lda\", \"bertopic\") VALUES (" + vals + "'" + str(id_list[i]) + "', '" + str(class3.data_list[i]) + "', '" + str(class5.data_list[i]) + "', '" + str(emotion1.data_list[i]) + "', '" + str(emotion2.data_list[i]) + "', '" + str(offensive1.data_list[i]) + "', '" + str(lda_topic) + "', '" + str(bert_topic) + "')")
+                    #insert_stmt = ("INSERT INTO " + tablename + "(" + "num, class3, class5, emotion1, emotion2, offensive1, lda, bertopic) VALUES ('" + str(id_list[i]) + "', '" + str(class3.data_list[i]) + "', '" + str(class5.data_list[i]) + "', '" + str(emotion1.data_list[i]) + "', '" + str(emotion2.data_list[i]) + "', '" + str(offensive1.data_list[i]) + "', '" + str(lda_topic) + "', '" + str(bert_topic) + "')")
                     
                     sentlog.info_p(f"SQL INSERT: {insert_stmt}")
                     #data = (id_list[i], data_list[i], class3.data_list[i], class5.data_list[i], emotion1.data_list[i], emotion2.data_list[i], offensive1.data_list[i], lda_topic, bert_topic)
-                    self.execute_stmt(insert_stmt)
+                    error = self.execute_stmt(insert_stmt)
+                    if error:
+                        return error
 
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
+            return str(e)
         finally:
             self.close_connection()
