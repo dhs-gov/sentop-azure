@@ -1,4 +1,4 @@
-# To use this configuration file, rename this file as 'sentop_config.py'.
+# To use this configuration file, rename as 'sentop_config.py'.
 
 
 # PostgreSQL configuration
