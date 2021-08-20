@@ -329,7 +329,7 @@ Due to variations in XLSX table formats, SENTOP places some restrictions to ensu
 
 ### SENTOP Config file
 
-SENTOP requires the 'SENTOP Config' sheet to be added to an XLSX file. This sheet contains the minimum configuration parameters needed for SENTOP to process arbitrary XLSX files. 
+SENTOP requires the 'SENTOP Config' sheet (see `/res/sentop_config.xlsx`) to be added to an XLSX file. This sheet contains the minimum configuration parameters needed for SENTOP to process arbitrary XLSX files. 
 
 ### Other Requirements
 
