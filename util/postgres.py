@@ -49,8 +49,7 @@ class Database:
             cur.close()
             return None
         except (Exception, psycopg2.DatabaseError) as e:
-            globalutils.show_stack_trace(f"Error executing SQL: {sql}, {str(e)}")
-            sentlog.error(f"Error with SQL: {sql}")
+            globalutils.show_stack_trace(f"{sql}, {str(e)}")
             return str(e)
 
 
@@ -63,7 +62,7 @@ class Database:
             cur.close()
             return None
         except (Exception, psycopg2.DatabaseError) as e:
-            globalutils.show_stack_trace(str(e))
+            globalutils.show_stack_trace(f"{sql}, {str(e)}")
             return str(e)
 
 
@@ -87,7 +86,7 @@ class Database:
             self.execute_stmt(stmt)
             return None
         except (Exception, psycopg2.DatabaseError) as e:
-            globalutils.show_stack_trace(str(e))
+            #globalutils.show_stack_trace(str(e))
             return str(e)
 
     '''
@@ -202,10 +201,12 @@ class Database:
    # -------------------------------- LDA WORDS ----------------------------------
 
     def create_lda_table(self, id, topics):
+        sentlog = sentop_log.SentopLog() 
+
         tablename = str(id) + self.lda_words_table_suffix
         self.open_connection()
         if self.table_exists(tablename):
-            self.remove_table(tablename)
+            error = self.remove_table(tablename)
 
         try:
             stmt = ("CREATE TABLE " + tablename +
@@ -213,6 +214,7 @@ class Database:
             error = self.execute_stmt(stmt)
             if error:
                 return error
+            sentlog.info_keyval(f"Created database table|{tablename}")
 
             num = 0
             for topic in topics:
@@ -231,15 +233,19 @@ class Database:
             self.close_connection()
 
     def create_lda_nooverlap_table(self, id, topics, lda_duplicate_words):
+        sentlog = sentop_log.SentopLog() 
         tablename = str(id) + self.lda_words_table_suffix + "_nooverlap"
         self.open_connection()
         if self.table_exists(tablename):
-            self.remove_table(tablename)
+            error = self.remove_table(tablename)
 
         try:
             stmt = ("CREATE TABLE " + tablename +
                 "(num int NOT NULL, topic int, word text, weight float, PRIMARY KEY (num))")
-            self.execute_stmt(stmt)
+            error = self.execute_stmt(stmt)
+            if error:
+                return error
+
             num = 0
             for topic in topics:
                 for i in range(len(topic.words)):
@@ -248,8 +254,12 @@ class Database:
                         stmt = ("INSERT INTO " + tablename +
                             "(num, topic, word, weight) VALUES (%s,%s,%s,%s)")
                         data = (num, topic.topic_num, topic.words[i], topic.weights[i])
-                        self.execute_stmt_data(stmt, data)
+                        error = self.execute_stmt_data(stmt, data)
+                        if error:
+                            return error
                         num = num + 1
+
+            sentlog.info_keyval(f"Created database table|{tablename}")
             return None
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
@@ -260,16 +270,20 @@ class Database:
     # -------------------------------- BERTOPIC WORDS ----------------------------------
 
     def create_bertopic_table(self, id, topics):
+        sentlog = sentop_log.SentopLog() 
         tablename = str(id) + self.bertopic_words_table_suffix + "_nooverlap"
 
         self.open_connection()
         if self.table_exists(tablename):
-            self.remove_table(tablename)
+            error = self.remove_table(tablename)
 
         try:
             stmt = ("CREATE TABLE " + tablename +
                 " (num int NOT NULL, topic int, word text, weight float, PRIMARY KEY (num))")
-            self.execute_stmt(stmt)
+            error = self.execute_stmt(stmt)
+            if error:
+                return error
+
             num = 0
             for topic in topics:
                 for i in range(len(topic.words)):
@@ -277,8 +291,11 @@ class Database:
                     stmt = ("INSERT INTO " + tablename +
                         "(num, topic, word, weight) VALUES (%s,%s,%s,%s)")
                     data = (num, topic.topic_num, topic.words[i], topic.weights[i])
-                    self.execute_stmt_data(stmt, data)
+                    error = self.execute_stmt_data(stmt, data)
+                    if error:
+                        return error
                     num = num + 1
+            sentlog.info_keyval(f"Created database table|{tablename}")
             return None
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
@@ -287,17 +304,19 @@ class Database:
             self.close_connection()
 
     def create_bertopic_nooverlap_table(self, id, topics, bert_duplicate_words):
-
+        sentlog = sentop_log.SentopLog() 
         tablename = str(id) + self.bertopic_words_table_suffix
 
         self.open_connection()
         if self.table_exists(tablename):
-            self.remove_table(tablename)
+            error = self.remove_table(tablename)
 
         try:
             stmt = ("CREATE TABLE " + tablename +
                 " (num int NOT NULL, topic int, word text, weight float, PRIMARY KEY (num))")
-            self.execute_stmt(stmt)
+            error = self.execute_stmt(stmt)
+            if error:
+                return error
             num = 0
             for topic in topics:
                 for i in range(len(topic.words)):
@@ -306,8 +325,11 @@ class Database:
                         stmt = ("INSERT INTO " + tablename +
                             "(num, topic, word, weight) VALUES (%s,%s,%s,%s)")
                         data = (num, topic.topic_num, topic.words[i], topic.weights[i])
-                        self.execute_stmt_data(stmt, data)
+                        error = self.execute_stmt_data(stmt, data)
+                        if error:
+                            return error
                         num = num + 1
+            sentlog.info_keyval(f"Created database table|{tablename}")
             return None
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
@@ -326,13 +348,10 @@ class Database:
     def create_result_table(self, id, id_list, data_list, sentiment_results, bertopic_results, lda_results, table_data, table_col_headers):
         sentlog = sentop_log.SentopLog() 
 
-        sentlog.debug("trace 1")
-
         bert_sentence_topics = None
         if bertopic_results:
             bert_sentence_topics = bertopic_results.topic_per_row
         lda_sentence_topics = None
-        sentlog.debug("trace 2")
 
         if lda_results:
             lda_sentence_topics = lda_results.topic_per_row
@@ -341,15 +360,12 @@ class Database:
 
         if self.table_exists(tablename):
             error = self.remove_table(tablename)
-        sentlog.warn(error)
-        sentlog.debug("trace 3")
 
         class3 = self.get_sentiment('class3', sentiment_results)
         class5 = self.get_sentiment('class5', sentiment_results)
         emotion1 = self.get_sentiment('emotion1', sentiment_results)
         offensive1 = self.get_sentiment('offensive1', sentiment_results)
         emotion2 = self.get_sentiment('emotion2', sentiment_results)
-        sentlog.debug("trace 4")
 
         # Check if the original data must be replicated in the results. If so, this data will be stored in table_data and the column headers
         # will be stored in table_data_headers.
@@ -360,7 +376,7 @@ class Database:
         if table_col_headers:
             # Get the table headers
             for header in table_col_headers:
-                print(f"Header start: {header}")
+                #print(f"Header start: {header}")
                 if header is None:
                     header = "\"na\""
                 else:
@@ -369,26 +385,20 @@ class Database:
                     header = re.sub("[^0-9a-zA-Z_]+", "", header)
                     header = '"' + header + '"'
 
-                print(f"Header end: {header}")
+                #print(f"Header end: {header}")
                 table_data_headers_str = table_data_headers_str + header + " text" + ", "
                 headers_insert_str = headers_insert_str + header + ", "
 
-        sentlog.debug("trace 5")
-
         try:
-            sentlog.debug("trace 6")
-
-            sentlog.info_keyval(f"Creating table|{tablename}")
             create_stmt = ("CREATE TABLE " + tablename + 
                 " (" + table_data_headers_str + "\"num\" text, \"class3\" text, \"class5\" text, \"emotion1\" text, \"emotion2\" text, \"offensive1\" text, \"lda\" text, \"bertopic\" text, PRIMARY KEY (num))")
             error = self.execute_stmt(create_stmt)
             if error:
                 return error
 
-            #print(f"table type: {type(table_data)}")
-            sentlog.debug(f"len(data_list): {len(data_list)}")
+            #sentlog.debug(f"len(data_list): {len(data_list)}")
             for i in range(len(data_list)):
-                print(f"i: {i}")
+                #print(f"i: {i}")
                 bert_topic = None
                 if bert_sentence_topics:
                     bert_topic = bert_sentence_topics[i]
@@ -405,12 +415,12 @@ class Database:
                 # Tables are only used for XLSX files.
                 table_vals = ""
                 table_row = None
-                if table_row:
+                if table_data:
                     table_row = table_data[i]
-                    print(f"cols type: {type(table_row)}, cols length: {len(table_row)}, cols val: {table_row}")
+                    #print(f"cols type: {type(table_row)}, cols length: {len(table_row)}, cols val: {table_row}")
 
                     for j in range (len(table_row)):
-                        print(f"j: {j}")
+                        #print(f"j: {j}")
                         val = table_row[j]
                         if not val or val == 'None':
                             val = ""
@@ -419,18 +429,16 @@ class Database:
                         val = val.strip('"')  # Remove double quotes from string
                         val = val.replace('"', "") # Remove single quotes from string
                         table_vals = table_vals + "'" + str(val) + "', "  # Add double quotes around entire val
-                    print(f"Vals: {table_vals}")
+                    #print(f"Vals: {table_vals}")
 
 
                 if (data_list[i]):
-                    insert_stmt = ("INSERT INTO " + tablename + "(" + headers_insert_str + "\"num\", \"class3\", \"class5\", \"emotion1\", \"emotion2\", \"offensive1\", \"lda\", \"bertopic\") VALUES (" + table_vals + "'" + str(id_list[i]) + "', '" + str(class3.data_list[i]) + "', '" + str(class5.data_list[i]) + "', '" + str(emotion1.data_list[i]) + "', '" + str(emotion2.data_list[i]) + "', '" + str(offensive1.data_list[i]) + "', '" + str(lda_topic) + "', '" + str(bert_topic) + "')")
-                    #insert_stmt = ("INSERT INTO " + tablename + "(" + "num, class3, class5, emotion1, emotion2, offensive1, lda, bertopic) VALUES ('" + str(id_list[i]) + "', '" + str(class3.data_list[i]) + "', '" + str(class5.data_list[i]) + "', '" + str(emotion1.data_list[i]) + "', '" + str(emotion2.data_list[i]) + "', '" + str(offensive1.data_list[i]) + "', '" + str(lda_topic) + "', '" + str(bert_topic) + "')")
-                    
-                    sentlog.info_p(f"SQL INSERT: {insert_stmt}")
-                    #data = (id_list[i], data_list[i], class3.data_list[i], class5.data_list[i], emotion1.data_list[i], emotion2.data_list[i], offensive1.data_list[i], lda_topic, bert_topic)
+                    insert_stmt = ("INSERT INTO " + tablename + "(" + headers_insert_str + "\"num\", \"class3\", \"class5\", \"emotion1\", \"emotion2\", \"offensive1\", \"lda\", \"bertopic\") VALUES (" + table_vals + "'" + str(id_list[i]) + "', '" + str(class3.data_list[i]) + "', '" + str(class5.data_list[i]) + "', '" + str(emotion1.data_list[i]) + "', '" + str(emotion2.data_list[i]) + "', '" + str(offensive1.data_list[i]) + "', '" + str(lda_topic) + "', '" + str(bert_topic) + "')")                    
+                    #sentlog.info_p(f"SQL INSERT: {insert_stmt}")
                     error = self.execute_stmt(insert_stmt)
                     if error:
                         return error
+
 
         except (Exception, psycopg2.DatabaseError) as e:
             globalutils.show_stack_trace(str(e))
