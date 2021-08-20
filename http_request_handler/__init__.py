@@ -116,7 +116,6 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
         return func.HttpResponse(error, status_code=400)
     if is_test:
         sentlog.info_p("Test request successful.")
-        sentlog.write(sentop_id, config.data_dir_path.get("output"))
         return func.HttpResponse("SENTOP test successful.", status_code=200)
 
     sentlog.info_keyval(f"KMS ID|{kms_id}")
