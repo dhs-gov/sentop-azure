@@ -323,3 +323,23 @@ The following shows partial JSON results (excluding surrounding double quotes an
 Note that `output` contains `result`, `bert_topics`, and `lda_topics` arrays. The `result`  array contains the list of corpus documents and their associated sentiment and topic values. The `bert_topics` array contains the list of significant keywords or phrases derived from  BERTopic while `lda_topics` contains the list of significant keywords or phrases derived from  LDA.
 
 
+## XLSX Files
+
+Due to the variation of XLSX tables, SENTOP places some requirements to ensure correct and complete processing. 
+
+### SENTOP Config file
+
+SENTOP requires the 'SENTOP Config' sheet to be added to an XLSX file. This sheet contains the minimum configuration parameters needed for SENTOP to process arbitrary XLSX files. 
+
+### Other Requirements
+
+For XLSX files, SENTOP requires the following:
+
+1. If an ID column header exists, the font color for that column header must be (Excel standard) red. Multiple ID columns are not permitted.
+2. For the column containing the unstructured text to be analyzed (i.e., the document column), the font color for that column header must be (Excel standard) blue. Multiple document columns are not permitted.
+3. Both ID column header (if it exists) and document column header must be on the same row and both must reside at the lowest-level header row (i.e., the row where each column has 
+   a header).
+4. At the lowest-level header row, no header names may be empty or null.
+5. At the lowest-level header row, no duplicate header names are permitted.
+
+
