@@ -325,7 +325,7 @@ Note that `output` contains `result`, `bert_topics`, and `lda_topics` arrays. Th
 
 ## XLSX Files
 
-Due to the variation of XLSX tables, SENTOP places some requirements to ensure correct and complete processing. 
+Due to variations in XLSX table formats, SENTOP places some restrictions to ensure correct and complete processing. 
 
 ### SENTOP Config file
 
