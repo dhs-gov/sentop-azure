@@ -206,13 +206,13 @@ def generate_excel(id, annotation, row_id_list, data_list, sentiment_results, be
         if table_col_headers:
             # Get the table headers
             for header in table_col_headers:
-                print(f"Header start: {header}")
+                #print(f"Header start: {header}")
                 if header is None:
                     header = "na"
                 else:
-                    header = header.replace("-","to")
+                    header = header.replace("-","_")
+                    header = header.replace(" ", "_")
                     header = re.sub("[^0-9a-zA-Z_]+", "", header)
-                    headers.append(header)
 
         result_headers = ['ID', 'Document', 'BERTopic Topic', 'LDA Topic', class3.name, class5.name, emotion1.name, emotion2.name, offensive1.name]
         result_headers.extend(headers)
