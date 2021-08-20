@@ -223,8 +223,8 @@ def get_data(req, bytes, sentop_id, kms_id):
                         sentlog.info_keyval(f"Found corpus column index|{corpus_column_index}")
                     else:
                         sentlog.info_p(f"got non-red/blue column header: {font_color}")
-            else:
-                sentlog.warn(f"No font color found for: {col_cell.value}")
+            #else:
+            #     sentlog.warn(f"No font color found for: {col_cell.value}")
 
 
         if not id_header:

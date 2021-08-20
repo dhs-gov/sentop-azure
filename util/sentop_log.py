@@ -2,7 +2,6 @@ from datetime import datetime
 from dateutil import tz
 from . import globalvars
 
-
 html_start = """<html>\n 
              <head>
              <style>
@@ -116,6 +115,14 @@ class SentopLog():
 
     def write(self, id, output_dir_path):
         globalvars.SENTOP_LOG = globalvars.SENTOP_LOG + html_end + "\n"
+        if output_dir_path is None:
+            print("output_dir_path is None in write()")
+        else:
+            print(f"output_dir_path: {output_dir_path}")
+        if id is None:
+            print("id is None in write()")
+        else:
+            print(f"id: {id}")
         log_out = output_dir_path + "\\" + id + "_log.html"
         f= open(log_out,"w+")
         f.write(globalvars.SENTOP_LOG)

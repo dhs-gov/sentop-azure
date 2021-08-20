@@ -69,7 +69,7 @@ class Database:
     def table_exists(self, tablename):
         try:
             cur = self.conn.cursor()
-            stmt = "SELECT * FROM information_schema.tables WHERE table_name = '" + tablename + "'"
+            stmt = "SELECT 1 FROM information_schema.tables WHERE table_name = 'public' AND table_name = '" + tablename + "'"
             cur.execute(stmt)
             self.conn.commit()
             cur.close()
@@ -136,7 +136,8 @@ class Database:
 
     def add_submission(self, id, file_url):
         self.open_connection()
-        if not self.table_exists("submissions"):
+        exists, error = self.table_exists("submissions")
+        if not exists:
             print("Table submissions does not exist")
             self.create_submissions_table()
 
@@ -205,7 +206,8 @@ class Database:
 
         tablename = str(id) + self.lda_words_table_suffix
         self.open_connection()
-        if self.table_exists(tablename):
+        exists, error = self.table_exists(tablename)
+        if exists:
             error = self.remove_table(tablename)
 
         try:
@@ -236,7 +238,8 @@ class Database:
         sentlog = sentop_log.SentopLog() 
         tablename = str(id) + self.lda_words_table_suffix + "_nooverlap"
         self.open_connection()
-        if self.table_exists(tablename):
+        exists, error = self.table_exists(tablename)
+        if exists:
             error = self.remove_table(tablename)
 
         try:
@@ -274,7 +277,8 @@ class Database:
         tablename = str(id) + self.bertopic_words_table_suffix + "_nooverlap"
 
         self.open_connection()
-        if self.table_exists(tablename):
+        exists, error = self.table_exists(tablename)
+        if exists:
             error = self.remove_table(tablename)
 
         try:
@@ -308,7 +312,8 @@ class Database:
         tablename = str(id) + self.bertopic_words_table_suffix
 
         self.open_connection()
-        if self.table_exists(tablename):
+        exists, error = self.table_exists(tablename)
+        if exists:
             error = self.remove_table(tablename)
 
         try:
@@ -357,8 +362,8 @@ class Database:
             lda_sentence_topics = lda_results.topic_per_row
         tablename = str(id) + self.results_table_suffix
         self.open_connection()
-
-        if self.table_exists(tablename):
+        exists, error = self.table_exists(tablename)
+        if exists:
             error = self.remove_table(tablename)
 
         class3 = self.get_sentiment('class3', sentiment_results)
@@ -388,6 +393,10 @@ class Database:
                 #print(f"Header end: {header}")
                 table_data_headers_str = table_data_headers_str + header + " text" + ", "
                 headers_insert_str = headers_insert_str + header + ", "
+        else:
+            # If JSON or other format
+            table_data_headers_str = "\"Document\" text" + ", "
+            headers_insert_str = "\"Document\", "
 
         try:
             create_stmt = ("CREATE TABLE " + tablename + 
@@ -428,9 +437,42 @@ class Database:
                         val = str(val)  # Make sure val is converted to string
                         val = val.strip('"')  # Remove double quotes from string
                         val = val.replace('"', "") # Remove single quotes from string
-                        table_vals = table_vals + "'" + str(val) + "', "  # Add double quotes around entire val
-                    #print(f"Vals: {table_vals}")
 
+                        # IMPORTANT! table_vals must be surrounded by SINGLE quotes to allow values that 
+                        # start with a numeric value. In Postgres, this cannot be done using double quotes. 
+                        val = val.replace("'", "''")  # Replace single quotes with two single quotes for Postgres.
+                        table_vals = table_vals + "'" + str(val) + "', "  # Add double quotes around entire val
+
+                    #print(f"Vals: {table_vals}")
+                else:
+                    # If JSON or other format
+                    val = data_list[i]
+                    val = str(val)  # Make sure val is converted to string
+                    val = val.strip('"')  # Remove double quotes from string
+                    val = val.replace('"', "") # Remove single quotes from string
+
+                    # IMPORTANT! table_vals must be surrounded by SINGLE quotes to allow values that 
+                    # start with a numeric value. In Postgres, this cannot be done using double quotes. 
+                    val = val.replace("'", "''")  # Replace single quotes with two single quotes for Postgres.
+                    table_vals = "'" + str(val) + "', "  # Add double quotes around entire val
+
+                if not id_list:
+                    id_list = list(range(1, len(data_list)+1))
+                    sentlog.warn(f"id_list is None")
+                if not class3.data_list:
+                    sentlog.warn(f"class3.datalist is None")
+                if not class5.data_list:
+                    sentlog.warn(f"class5.data_list is None")
+                if not emotion1.data_list:
+                    sentlog.warn(f"emotion1.data_list is None")
+                if not emotion2.data_list:
+                    sentlog.warn(f"emotion2.data_list is None")
+                if not offensive1.data_list:
+                    sentlog.warn(f"offensive1.data_list is None")
+                #if not lda_topic:   # Could mean that lda_topic = 0
+                #    sentlog.warn(f"lda_topic is None")
+                #if not bert_topic:  # Could mean that bert_topic = 0
+                #    sentlog.warn(f"bert_topic is None")
 
                 if (data_list[i]):
                     insert_stmt = ("INSERT INTO " + tablename + "(" + headers_insert_str + "\"num\", \"class3\", \"class5\", \"emotion1\", \"emotion2\", \"offensive1\", \"lda\", \"bertopic\") VALUES (" + table_vals + "'" + str(id_list[i]) + "', '" + str(class3.data_list[i]) + "', '" + str(class5.data_list[i]) + "', '" + str(emotion1.data_list[i]) + "', '" + str(emotion2.data_list[i]) + "', '" + str(offensive1.data_list[i]) + "', '" + str(lda_topic) + "', '" + str(bert_topic) + "')")                    
