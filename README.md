@@ -1,12 +1,12 @@
-# SENTOP
+# SenTop
 
 [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/) [![Python 3.8](https://img.shields.io/github/v/release/dhs-gov/sentopic-azure)](https://img.shields.io/github/v/release/dhs-gov/sentopic-azure/)
 
-SENTOP combines sentiment analysis and topic modeling into a single capability allowing for sentiment to be derived per generated topic and for topics to be derived per generated sentiment. This version of SENTOP is implemented as an asynchronous Azure Durable Function service and includes required Azure modules for endpoint, orchestrator, and activity.
+SenTop combines sentiment analysis and topic modeling into a single capability allowing for sentiment to be derived per generated topic and for topics to be derived per generated sentiment. This version of SenTop is implemented as an asynchronous Azure Durable Function service and includes required Azure modules for endpoint, orchestrator, and activity.
 
 ## Sentiment Analysis
 
-Sentiment analysis is performed using [AdaptNLP](https://github.com/Novetta/adaptnlp) with state-of-the-art (SOTA) [Hugging Face Transformers](https://github.com/huggingface/transformers).  SENTOP provides multiple sentiment analyses (confidence scores also available):
+Sentiment analysis is performed using [AdaptNLP](https://github.com/Novetta/adaptnlp) with state-of-the-art (SOTA) [Hugging Face Transformers](https://github.com/huggingface/transformers).  SenTop provides multiple sentiment analyses (confidence scores also available):
 
 1. [RoBERTa Base Sentiment](https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment) for 3-class sentiment -- based on Facebook AI's [RoBERTa](https://ai.facebook.com/blog/roberta-an-optimized-method-for-pretraining-self-supervised-nlp-systems/):
     - negative  
@@ -58,7 +58,7 @@ Sentiment analysis is performed using [AdaptNLP](https://github.com/Novetta/adap
 
 ## Topic Modeling
 
-SENTOP provides two types of topic modeling: [Latent Dirichlet Allocation (LDA)](https://en.wikipedia.org/wiki/Latent_Dirichlet_allocation) using [Tomotopy](https://github.com/bab2min/tomotopy) and transformer-based [BERTopic](https://github.com/MaartenGr/BERTopic). While LDA provides de facto, statistical-based topic modeling, BERTopic provides SOTA-level performance using [Hugging Face Transformers](https://github.com/huggingface/transformers). Transformers that have been tested include:
+SenTop provides two types of topic modeling: [Latent Dirichlet Allocation (LDA)](https://en.wikipedia.org/wiki/Latent_Dirichlet_allocation) using [Tomotopy](https://github.com/bab2min/tomotopy) and transformer-based [BERTopic](https://github.com/MaartenGr/BERTopic). While LDA provides de facto, statistical-based topic modeling, BERTopic provides SOTA-level performance using [Hugging Face Transformers](https://github.com/huggingface/transformers). Transformers that have been tested include:
 
 1. [BERT Base Uncased](https://huggingface.co/bert-base-uncased) -- based on Google's [Bidirectional Encoder Representations from Transformers (BERT)](https://en.wikipedia.org/wiki/BERT_(language_model))
 2. [XLM RoBERTa Base](https://huggingface.co/xlm-roberta-base) -- based on [XLM-RoBERTa](https://huggingface.co/transformers/model_doc/xlmroberta.html)
@@ -66,7 +66,7 @@ SENTOP provides two types of topic modeling: [Latent Dirichlet Allocation (LDA)]
 
 ## Combining Sentiment Analysis and Topic Modeling
 
-SENTOP combines sentiment analysis and topic modeling by performing both at the document (i.e., paragraph) level for a corpus, the results of which can then be represented by a table as shown below.
+SenTop combines sentiment analysis and topic modeling by performing both at the document (i.e., paragraph) level for a corpus, the results of which can then be represented by a table as shown below.
 
 
 | Document | BERT Topic | LDA Topic | 3-Class Sentiment | 5-Class Sentiment |
@@ -114,10 +114,10 @@ The following query parameters will be supported.
 | `Content-Type` | `application/json`,<br>`multipart/form-data` | Yes | Specify <i>either</i> JSON or multi-part form payloads. If both JSON and multi-part form payloads are submitted, the JSON payload must be attached as a file (See Multipart Form Data). |
 
 ## Body / Payload
-SENTOP requires that data be submitted either as a JSON payload or file attachments (including `.json` files).
+SenTop requires that data be submitted either as a JSON payload or file attachments (including `.json` files).
 
 ### JSON Payload
-SENTOP JSON payloads require a `documents` key that defines a list of JSON objects, each of which consists of a `text` key and a document (or paragraph) string value. Optionally, a list of stop words may be added for the corpus domain using the `stopwords` key.
+SenTop JSON payloads require a `documents` key that defines a list of JSON objects, each of which consists of a `text` key and a document (or paragraph) string value. Optionally, a list of stop words may be added for the corpus domain using the `stopwords` key.
 
 ```bash
 curl --location --request POST 'https://<domain>/sentop'
@@ -138,7 +138,7 @@ curl --location --request POST 'https://<domain>/sentop'
 ```
 
 ### Multipart Form Data 
-SENTOP supports one or more file attachments. The supported file types include:
+SenTop supports one or more file attachments. The supported file types include:
 
 | Type | Available | Description |
 | :--- | :---: | :--- |
@@ -161,7 +161,7 @@ curl --location --request POST 'https://<domain>/sentop'
 ```
 
 ## Response
-Due to the asynchronous nature of Azure Durable Functions, a request to SENTOP will return a set of Azure service endpoints that may be used to invoke further actions, such as retrieving results. These endpoints are defined in the [Azure HttpManagementPayload API](https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.webjobs.extensions.durabletask?view=azure-dotnet) and include:
+Due to the asynchronous nature of Azure Durable Functions, a request to SenTop will return a set of Azure service endpoints that may be used to invoke further actions, such as retrieving results. These endpoints are defined in the [Azure HttpManagementPayload API](https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.webjobs.extensions.durabletask?view=azure-dotnet) and include:
 
 | Service | Description |
 | :--- | :--- | 
@@ -184,7 +184,7 @@ Azure returns this set of endpoints as a JSON object.
 ```
 
 ## Response Codes
-Due to the asynchronous nature of Azure Durable Functions, a request to SENTOP will normally result in an `HTTP 202 Accepted` after SENTOP has received all data. 
+Due to the asynchronous nature of Azure Durable Functions, a request to SenTop will normally result in an `HTTP 202 Accepted` after SenTop has received all data. 
 
 | Code | Payload | Description |
 | :--- | :----: | :--- |
@@ -193,7 +193,7 @@ Due to the asynchronous nature of Azure Durable Functions, a request to SENTOP w
 | `500` | None | Internal Server Error.|
 
 ## Results
-SENTOP results are available from the `statusQueryGetUri` endpoint after SENTOP has completed processing the data. <i>NOTE: Azure Durable Functions return JSON results (1) as a double-quoted string and (2) that contain escaped double quotes around keys and values.</i>. 
+SenTop results are available from the `statusQueryGetUri` endpoint after SenTop has completed processing the data. <i>NOTE: Azure Durable Functions return JSON results (1) as a double-quoted string and (2) that contain escaped double quotes around keys and values.</i>. 
 
 The following shows partial JSON results (excluding surrounding double quotes and quoted keys/values). Ellipses denote omitted data.
 
@@ -325,15 +325,15 @@ Note that `output` contains `result`, `bert_topics`, and `lda_topics` arrays. Th
 
 ## XLSX Files
 
-Due to variations in XLSX table formats, SENTOP places some restrictions to ensure correct and complete processing. 
+Due to variations in XLSX table formats, SenTop places some restrictions to ensure correct and complete processing. 
 
-### SENTOP Config file
+### SenTop Config file
 
-SENTOP requires the 'SENTOP Config' sheet (see `/res/sentop_config.xlsx`) to be added to an XLSX file. This sheet contains the minimum configuration parameters needed for SENTOP to process arbitrary XLSX files. 
+SenTop requires the 'SENTOP Config' sheet (see `/res/sentop_config.xlsx`) to be added to an XLSX file. This sheet contains the minimum configuration parameters needed for SenTop to process arbitrary XLSX files. 
 
 ### Other Requirements
 
-For XLSX files, SENTOP requires the following:
+For XLSX files, SenTop requires the following:
 
 1. If an ID column header exists, the font color for that column header must be (Excel standard) red. Multiple ID columns are not permitted.
 2. For the column containing the unstructured text to be analyzed (i.e., the document column), the font color for that column header must be (Excel standard) blue. Multiple document columns are not permitted.
